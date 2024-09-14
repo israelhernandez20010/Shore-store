@@ -1,56 +1,6 @@
 
 {
-  "products": [
-    {
-      "id": "001",
-      "name": "ComfortPlus Running Shoes",
-      "brand": "Speedster",
-      "price": 2999,
-      "currency": "PHP",
-      "sizes": ["6", "7", "8", "9", "10"],
-      "colors": ["Black", "White", "Blue"],
-      "material": "Breathable Mesh",
-      "features": [
-        "Lightweight design",
-        "Shock-absorbing sole",
-        "Slip-resistant grip"
-      ],
-      "availability": "In Stock",
-      "description": "Perfect for athletes and fitness enthusiasts, the ComfortPlus Running Shoes offer exceptional comfort and support for long-distance running."
-    },
-    {
-      "id": "002",
-      "name": "UrbanStyle Casual Sneakers",
-      "brand": "TrendyFeet",
-      "price": 1999,
-      "currency": "PHP",
-      "sizes": ["5", "6", "7", "8", "9", "10"],
-      "colors": ["Red", "Grey", "Green"],
-      "material": "Canvas",
-      "features": [
-        "Classic design",
-        "Durable stitching",
-        "Padded insoles"
-      ],
-      "availability": "In Stock",
-      "description": "These UrbanStyle Casual Sneakers are perfect for everyday wear, offering both style and comfort for your urban adventures."
-    },
-    {
-      "id": "003",
-      "name": "Elegant Leather Loafers",
-      "brand": "ClassicStep",
-      "price": 3999,
-      "currency": "PHP",
-      "sizes": ["7", "8", "9", "10", "11"],
-      "colors": ["Brown", "Black"],
-      "material": "Genuine Leather",
-      "features": [
-        "Elegant design",
-        "Soft leather lining",
-        "Flexible sole"
-      ],
-      "availability": "Limited Stock",
-      "description": "Crafted with elegance, these leather loafers are ideal for formal occasions and professional settings."
-    }
-  ]
+  "product": {
+    "shoes": "The collection features a diverse range of footwear tailored to different needs and styles, starting with the ComfortPlus Running Shoes by Speedster. Priced at PHP 2,999, these shoes are designed for athletes and fitness enthusiasts, offering a lightweight design, shock-absorbing sole, and slip-resistant grip in colors like Black, White, and Blue. For those seeking casual yet stylish options, the UrbanStyle Casual Sneakers from TrendyFeet are available at PHP 1,999. They boast a classic design with durable stitching and padded insoles, available in vibrant colors like Red, Grey, and Green. Lastly, the Elegant Leather Loafers from ClassicStep, priced at PHP 3,999, offer a touch of sophistication with their elegant design and soft leather lining, perfect for formal occasions. These loafers come in timeless Brown and Black hues, providing a refined choice for professional settings."
+  }
 }

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat with GPT-4</title>
+    <title>Chat with gpt-4o</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -121,7 +121,7 @@
                         'Authorization': `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
-                        model: 'gpt-4',
+                        model: 'gpt-4o',
                         messages: [userMessage]
                     })
                 });
@@ -134,7 +134,7 @@
                 const reply = formatReply(data.choices[0].message.content);
 
                 removeTypingIndicator();
-                displayMessage('GPT-4', reply, 'bot');
+                displayMessage('gpt-4o', reply, 'bot');
             } catch (error) {
                 removeTypingIndicator();
                 displayError(error.message);
@@ -185,7 +185,7 @@
             const messages = document.getElementById('messages');
             const typingElement = document.createElement('div');
             typingElement.className = 'typing-indicator';
-            typingElement.textContent = 'GPT-4 is typing...';
+            typingElement.textContent = 'gpt-4o is typing...';
             typingElement.id = 'typing-indicator';
 
             messages.appendChild(typingElement);

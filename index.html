@@ -91,7 +91,7 @@
 
             if (!message && !file) return;
 
-            let userMessage = { role: 'user', content: [] };
+            const userMessage = { role: 'user', content: [] };
 
             if (message) {
                 displayMessage('You', message, 'user');
@@ -121,7 +121,7 @@
                         'Authorization': `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
-                        model: 'gpt-4o',
+                        model: 'gpt-4',
                         messages: [userMessage]
                     })
                 });
@@ -152,7 +152,7 @@
 
             const textElement = document.createElement('div');
             textElement.className = 'text';
-            textElement.innerHTML = message; // Use innerHTML to allow HTML formatting
+            textElement.innerHTML = message;
 
             messageElement.appendChild(nameElement);
             messageElement.appendChild(textElement);

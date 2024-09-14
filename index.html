@@ -4,178 +4,535 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shoe Store Chatbot</title>
+    <title>Chat with GPT-4o-mini-2024-07-18</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
         }
-        .chatbox {
-            width: 100%;
+        #chatbox {
+            width: 80%;
             max-width: 600px;
-            margin: 0 auto;
+            height: 400px;
             background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .messages {
-            max-height: 400px;
-            overflow-y: auto;
-            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+            position: relative;
         }
         .message {
-            margin-bottom: 15px;
+            position: relative;
             padding: 10px;
-            border-radius: 4px;
-            max-width: 70%;
-        }
-        .message.user {
-            background-color: #007bff;
-            color: white;
-            text-align: right;
-            margin-left: auto;
-        }
-        .message.bot {
-            background-color: #e9ecef;
-            color: black;
-            text-align: left;
-        }
-        .input-group {
-            display: flex;
             margin-bottom: 10px;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            background-color: #e0f7fa;
         }
-        .input-group input {
-            flex-grow: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px 0 0 4px;
+        .message:nth-child(even) {
+            background-color: #f1f8e9;
         }
-        .input-group button {
-            padding: 10px 15px;
-            border: none;
+        .message-buttons {
+            margin-top: 5px;
+            text-align: right;
+        }
+        .message-buttons button {
+            margin-left: 5px;
             background-color: #007bff;
             color: white;
-            border-radius: 0 4px 4px 0;
+            border-radius: 5px;
+            padding: 5px 10px;
+            border: none;
+            transition: background-color 0.3s;
             cursor: pointer;
         }
-        .typing-indicator {
+        .message-buttons button:hover {
+            background-color: #0056b3;
+        }
+        #inputContainer {
+            width: 80%;
+            max-width: 600px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        #userInputContainer {
+            display: flex;
+            flex: 1;
+            position: relative;
+        }
+        #userInput {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            height: 80px;
+            resize: vertical;
+        }
+        #sendButton {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.1s;
+            cursor: pointer;
+        }
+        #sendButton:hover {
+            background-color: #0056b3;
+        }
+        #sendButton:active {
+            transform: translateY(2px);
+        }
+        #clearInputButton {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: red;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid red;
+        }
+        #clearInputButton:hover {
+            background-color: red;
+            color: white;
+        }
+        #loadingIndicator {
+            display: none;
+            margin-top: 10px;
+            text-align: center;
+        }
+        #buttonContainer {
+            width: 80%;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        #importButton, #exportButton, #clearButton, #toggleSearchButton {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.1s;
+            cursor: pointer;
+        }
+        #importButton:hover, #exportButton:hover, #clearButton:hover, #toggleSearchButton:hover {
+            background-color: #0056b3;
+        }
+        #importButton:active, #exportButton:active, #clearButton:active, #toggleSearchButton:active {
+            transform: translateY(2px);
+        }
+        .user-name {
+            color: violet;
+        }
+        .bot-name {
+            color: red;
+        }
+        #apiKeyContainer {
+            width: 80%;
+            max-width: 600px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        #apiKeyInput {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+        }
+        #typingIndicator {
             display: none;
             font-style: italic;
-            color: grey;
-            margin-bottom: 15px;
-            text-align: left;
+            color: gray;
+            margin-bottom: 10px;
         }
-        .error-message {
-            color: red;
-            margin-bottom: 15px;
+        pre {
+            background-color: #eceff1;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            position: relative;
+        }
+        code {
+            font-family: monospace;
+        }
+        .copy-button {
+            display: block;
+            margin-top: 5px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .message-content p {
+            margin-bottom: 1em;
+        }
+        .word-count {
+            font-size: 0.9em;
+            color: gray;
+            margin-top: 5px;
+        }
+        #searchContainer {
+            width: 80%;
+            max-width: 600px;
+            display: none;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        #searchInput {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            margin-right: 10px;
+        }
+        #searchButton {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.1s;
+            cursor: pointer;
+        }
+        #searchButton:hover {
+            background-color: #0056b3;
+        }
+        #searchButton:active {
+            transform: translateY(2px);
+        }
+        #searchResultCount {
+            margin-left: 10px;
+            font-size: 0.9em;
+            color: gray;
+        }
+        #navigationButtons {
+            display: none;
+            margin-top: 10px;
+        }
+        #navigationButtons button {
+            padding: 5px 10px;
+            margin: 0 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #navigationButtons button:hover {
+            background-color: #0056b3;
         }
     </style>
-    <script>
-        let apiKey = '';
-
-        async function fetchData() {
-            try {
-                const response = await fetch('data.json');
-                if (!response.ok) {
-                    throw new Error('Failed to load data');
-                }
-                const data = await response.json();
-                return data.products;
-            } catch (error) {
-                showError('Error loading data. Please try again later.');
-                return [];
-            }
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('userInput');
-            const message = input.value.trim();
-            if (message === '') return;
-
-            addMessage('user', message);
-            input.value = '';
-
-            showTypingIndicator(true);
-
-            const products = await fetchData();
-
-            setTimeout(() => {
-                const reply = generateReply(message, products);
-                addMessage('bot', reply);
-                showTypingIndicator(false);
-            }, 1000); // Simulate delay
-        }
-
-        function generateReply(message, products) {
-            let reply = '';
-            if (message.toLowerCase().includes("running")) {
-                reply = `I recommend our ComfortPlus Running Shoes. They are lightweight and perfect for athletes.`;
-            } else if (message.toLowerCase().includes("casual")) {
-                reply = `Our UrbanStyle Casual Sneakers might interest you. They are perfect for everyday wear.`;
-            } else if (message.toLowerCase().includes("formal")) {
-                reply = `For formal occasions, check out our Elegant Leather Loafers. They are crafted with genuine leather.`;
-            } else {
-                reply = `Could you please specify what type of shoes you are looking for? We have running, casual, and formal shoes.`;
-            }
-            return reply.replace(/(.{1,70})(\s|$)/g, '$1\n\n'); // Adds space between paragraphs
-        }
-
-        function addMessage(sender, text) {
-            const messagesDiv = document.querySelector('.messages');
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', sender);
-            messageDiv.textContent = text;
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        function showTypingIndicator(show) {
-            const typingIndicator = document.getElementById('typingIndicator');
-            typingIndicator.style.display = show ? 'block' : 'none';
-        }
-
-        function showError(message) {
-            const messagesDiv = document.querySelector('.messages');
-            const errorDiv = document.createElement('div');
-            errorDiv.classList.add('error-message');
-            errorDiv.textContent = message;
-            messagesDiv.appendChild(errorDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        function setApiKey() {
-            apiKey = document.getElementById('apiKeyInput').value.trim();
-            if (apiKey === '') {
-                showError('Please enter a valid API key.');
-            } else {
-                alert('API Key set successfully!');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('apiKeyButton').addEventListener('click', setApiKey);
-            document.getElementById('sendButton').addEventListener('click', sendMessage);
-            document.getElementById('userInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') sendMessage();
-            });
-        });
-    </script>
 </head>
 <body>
-    <div class="chatbox">
-        <div class="input-group">
-            <input type="text" id="apiKeyInput" placeholder="Enter OpenAI API Key">
-            <button id="apiKeyButton">Set API Key</button>
-        </div>
-        <div class="messages"></div>
-        <div id="typingIndicator" class="typing-indicator">Bot is typing...</div>
-        <div class="input-group">
-            <input type="text" id="userInput" placeholder="Ask about our shoes...">
-            <button id="sendButton">Send</button>
-        </div>
+    <div id="buttonContainer">
+        <button id="importButton">Import Chat</button>
+        <button id="clearButton">Clear All Chat</button>
+        <button id="exportButton">Export Chat</button>
+        <button id="toggleSearchButton">Show Search</button>
     </div>
-</body>
-</html>
+    <div id="apiKeyContainer">
+        <input type="text" id="apiKeyInput" placeholder="Enter your API key here...">
+    </div>
+    <div id="searchContainer">
+        <input type="text" id="searchInput" placeholder="Search messages...">
+        <button id="searchButton">Search</button>
+        <span id="searchResultCount"></span>
+    </div>
+    <div id="navigationButtons">
+        <button id="prevButton">Previous</button>
+        <button id="nextButton">Next</button>
+    </div>
+    <div id="chatbox"></div>
+    <div id="typingIndicator">gpt-4o-mini-2024-07-18 is typing...</div>
+    <div id="inputContainer">
+        <div id="userInputContainer">
+            <textarea id="userInput" placeholder="Type your message here..."></textarea>
+            <button id="clearInputButton">&times;</button>
+        </div>
+        <button id="sendButton">Send</button>
+    </div>
+    <div id="loadingIndicator">Loading...</div>
+
+    <script>
+        let chatHistory = [];
+        let lastBotMessage = '';
+        let searchResults = [];
+        let currentSearchIndex = 0;
+
+        document.getElementById('sendButton').addEventListener('click', async () => {
+            const userInput = document.getElementById('userInput').value;
+
+            if (userInput.trim() === '') return;
+
+            addMessage('You', userInput);
+            chatHistory.push({ role: 'user', content: userInput });
+
+            document.getElementById('userInput').value = '';
+
+            // Show typing indicator
+            document.getElementById('typingIndicator').style.display = 'block';
+
+            await getBotResponse();
+        });
+
+        document.getElementById('clearInputButton').addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear the input field?')) {
+                document.getElementById('userInput').value = '';
+            }
+        });
+
+        document.getElementById('searchButton').addEventListener('click', () => {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const messages = document.querySelectorAll('.message');
+            searchResults = [];
+            messages.forEach((message, index) => {
+                const content = message.querySelector('.message-content').innerText.toLowerCase();
+                if (content.includes(searchTerm)) {
+                    searchResults.push(message);
+                    message.style.backgroundColor = 'yellow';
+                } else {
+                    message.style.backgroundColor = '';
+                }
+            });
+
+            if (searchResults.length > 0) {
+                currentSearchIndex = 0;
+                searchResults[currentSearchIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                document.getElementById('searchResultCount').innerText = `Found ${searchResults.length} results`;
+                document.getElementById('navigationButtons').style.display = 'block';
+            } else {
+                document.getElementById('searchResultCount').innerText = 'No results found';
+                document.getElementById('navigationButtons').style.display = 'none';
+            }
+        });
+
+        document.getElementById('prevButton').addEventListener('click', () => {
+            if (searchResults.length > 0) {
+                currentSearchIndex = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
+                searchResults[currentSearchIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+
+        document.getElementById('nextButton').addEventListener('click', () => {
+            if (searchResults.length > 0) {
+                currentSearchIndex = (currentSearchIndex + 1) % searchResults.length;
+                searchResults[currentSearchIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+
+        document.getElementById('toggleSearchButton').addEventListener('click', () => {
+            const searchContainer = document.getElementById('searchContainer');
+            if (searchContainer.style.display === 'none') {
+                searchContainer.style.display = 'flex';
+                document.getElementById('toggleSearchButton').innerText = 'Hide Search';
+            } else {
+                searchContainer.style.display = 'none';
+                document.getElementById('toggleSearchButton').innerText = 'Show Search';
+                document.getElementById('searchInput').value = '';
+                document.getElementById('searchResultCount').innerText = '';
+                document.getElementById('navigationButtons').style.display = 'none';
+                clearSearchHighlights();
+            }
+        });
+
+        function clearSearchHighlights() {
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(message => {
+                message.style.backgroundColor = '';
+            });
+        }
+
+        async function getBotResponse() {
+            try {
+                const apiKey = document.getElementById('apiKeyInput').value;
+                if (!apiKey) {
+                    throw new Error('API key is required');
+                }
+
+                console.log('Sending messages:', chatHistory); // Debugging line
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4o-mini-2024-07-18', // Using the gpt-4o-mini-2024-07-18 model
+                        messages: chatHistory,
+                        max_tokens: 4096 // Adjusting to the maximum token limit
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error.message}`);
+                }
+
+                const data = await response.json();
+                const botMessage = data.choices[0].message.content.trim();
+                addMessage('gpt-4o-mini-2024-07-18', botMessage);
+                chatHistory.push({ role: 'assistant', content: botMessage });
+                lastBotMessage = botMessage;
+                speak(botMessage); // Call the text-to-speech function
+            } catch (error) {
+                addMessage('Error', error.message);
+            } finally {
+                // Hide typing indicator
+                document.getElementById('typingIndicator').style.display = 'none';
+            }
+        }
+
+        function addMessage(sender, content) {
+            const chatbox = document.getElementById('chatbox');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            const wordCount = countWords(content);
+            messageDiv.innerHTML = `
+                <strong class="${sender === 'You' ? 'user-name' : 'bot-name'}">${sender}:</strong> <span class="message-content">${convertMarkdownToHTML(content)}</span>
+                <div class="word-count">Word count: ${wordCount}</div>
+                <div class="message-buttons">
+                    <button onclick="copyMessage(this)">Copy</button>
+                    <button onclick="deleteMessage(this)">Delete</button>
+                    <button onclick="reaskMessage(this, '${content.replace(/'/g, "\\'")}')">Reask</button>
+                    ${sender === 'gpt-4o-mini-2024-07-18' ? '<button onclick="continueMessage()">Continue</button>' : ''}
+                </div>
+            `;
+            chatbox.appendChild(messageDiv);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        function countWords(text) {
+            return text.split(/\s+/).filter(word => word.length > 0).length;
+        }
+
+        function convertMarkdownToHTML(markdown) {
+            // Replace bold text
+            let html = markdown.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // Replace code blocks
+            html = html.replace(/```(.*?)```/gs, (match, p1) => {
+                // Split the code block into lines and join with <br> for HTML
+                const formattedCode = p1.split('\n').map(line => line.trim()).join('<br>');
+                return `<pre><code>${formattedCode}</code><button class="copy-button" onclick="copyCode(this)">Copy</button></pre>`;
+            });
+
+            // Replace newlines with paragraph tags
+            html = html.replace(/\n/g, '</p><p>');
+
+            return `<p>${html}</p>`;
+        }
+
+        function copyMessage(button) {
+            const messageContent = button.parentElement.parentElement.querySelector('.message-content').innerText;
+            navigator.clipboard.writeText(messageContent).then(() => {
+                alert('Message copied to clipboard');
+            }).catch(err => {
+                console.error('Failed to copy message: ', err);
+            });
+        }
+
+        function deleteMessage(button) {
+            const messageDiv = button.parentElement.parentElement;
+            messageDiv.remove();
+        }
+
+        function reaskMessage(button, content) {
+            document.getElementById('userInput').value = content;
+        }
+
+        async function continueMessage() {
+            // Show typing indicator
+            document.getElementById('typingIndicator').style.display = 'block';
+
+            const lastWords = lastBotMessage.split(' ').slice(-4).join(' ');
+            chatHistory.push({ role: 'user', content: `Please continue from: "${lastWords}"` });
+            await getBotResponse();
+        }
+
+        document.getElementById('exportButton').addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify(chatHistory)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'chat_history.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('importButton').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/json';
+            input.onchange = event => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        try {
+                            const importedHistory = JSON.parse(e.target.result);
+                            if (Array.isArray(importedHistory) && importedHistory.every(msg => msg.role && msg.content)) {
+                                chatHistory = importedHistory;
+                                const chatbox = document.getElementById('chatbox');
+                                chatbox.innerHTML = '';
+                                chatHistory.forEach(message => addMessage(message.role === 'user' ? 'You' : 'gpt-4o-mini-2024-07-18', message.content));
+                            } else {
+                                throw new Error('Invalid chat history format');
+                            }
+                        } catch (error) {
+                            alert('Failed to import chat history: ' + error.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        });
+
+        document.getElementById('clearButton').addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all chat history?')) {
+                chatHistory = [];
+                document.getElementById('chatbox').innerHTML = '';
+            }
+        });
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                window.speechSynthesis.speak(utterance);
+            } else {
+                console.error('Text-to-speech is not supported in this browser.');
+            }
+        }
+
+        function copyCode(button) {
+            const codeContent = button.previousElementSibling.innerText;
+            naviga

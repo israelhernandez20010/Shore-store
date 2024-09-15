@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,6 +64,9 @@
 <body>
     <div id="chat">
         <input type="text" id="apiKeyInput" placeholder="Enter OpenAI API key" style="width: calc(100% - 22px);" />
+        <input type="text" id="modelInput" placeholder="Enter model (e.g., gpt-4o)" style="width: calc(100% - 22px);" />
+        <input type="text" id="botNameInput" placeholder="Enter bot name" style="width: calc(100% - 22px);" />
+        <input type="text" id="titleInput" placeholder="Enter title" style="width: calc(100% - 22px);" />
         <div id="messages"></div>
         <input type="text" id="input" placeholder="Type your message here" style="width: calc(100% - 22px);" />
         <input type="file" id="imageInput" accept="image/*" style="width: calc(100% - 22px);" />
@@ -71,11 +75,25 @@
 
     <script>
         let apiKey = ''; // Initialize an empty API key
+        let model = 'gpt-4o'; // Default model
+        let botName = 'gpt-4o'; // Default bot name
         const endpoint = 'https://api.openai.com/v1/chat/completions';
         let messageHistory = []; // Initialize an empty message history
 
         document.getElementById('apiKeyInput').addEventListener('input', function() {
             apiKey = this.value; // Update the API key as the user types
+        });
+
+        document.getElementById('modelInput').addEventListener('input', function() {
+            model = this.value; // Update the model as the user types
+        });
+
+        document.getElementById('botNameInput').addEventListener('input', function() {
+            botName = this.value; // Update the bot name as the user types
+        });
+
+        document.getElementById('titleInput').addEventListener('input', function() {
+            document.title = this.value; // Update the title as the user types
         });
 
         async function sendMessage() {
@@ -123,7 +141,7 @@
                         'Authorization': `Bearer ${apiKey}`
                     },
                     body: JSON.stringify({
-                        model: 'gpt-4o',
+                        model: model,
                         messages: messageHistory // Send the entire message history
                     })
                 });
@@ -136,7 +154,7 @@
                 const reply = formatReply(data.choices[0].message.content);
 
                 removeTypingIndicator();
-                displayMessage('gpt-4o', reply, 'bot');
+                displayMessage(botName, reply, 'bot');
 
                 messageHistory.push({ role: 'assistant', content: [{ type: 'text', text: reply }] }); // Add the bot's reply to the history
             } catch (error) {
@@ -189,7 +207,7 @@
             const messages = document.getElementById('messages');
             const typingElement = document.createElement('div');
             typingElement.className = 'typing-indicator';
-            typingElement.textContent = 'gpt-4o is typing...';
+            typingElement.textContent = `${botName} is typing...`;
             typingElement.id = 'typing-indicator';
 
             messages.appendChild(typingElement);

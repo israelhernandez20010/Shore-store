@@ -49,6 +49,12 @@
             border-radius: 8px; 
             border: 1px solid #ddd; 
             margin: 5px 0;
+            width: calc(100% - 22px);
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            height: 80px; /* Default height */
         }
         button {
             background-color: #6200ea; 
@@ -63,13 +69,13 @@
 </head>
 <body>
     <div id="chat">
-        <input type="text" id="apiKeyInput" placeholder="Enter OpenAI API key" style="width: calc(100% - 22px);" />
-        <input type="text" id="modelInput" placeholder="Enter model (e.g., gpt-4o)" style="width: calc(100% - 22px);" />
-        <input type="text" id="botNameInput" placeholder="Enter bot name" style="width: calc(100% - 22px);" />
-        <input type="text" id="titleInput" placeholder="Enter title" style="width: calc(100% - 22px);" />
+        <input type="text" id="apiKeyInput" placeholder="Enter OpenAI API key" />
+        <input type="text" id="modelInput" placeholder="Enter model (e.g., gpt-4o)" />
+        <input type="text" id="botNameInput" placeholder="Enter bot name" />
+        <input type="text" id="titleInput" placeholder="Enter title" />
         <div id="messages"></div>
-        <textarea id="input" placeholder="Type your message here" style="width: calc(100% - 22px); height: 100px;"></textarea>
-        <input type="file" id="imageInput" accept="image/*" style="width: calc(100% - 22px);" />
+        <textarea id="input" placeholder="Type your message here"></textarea>
+        <input type="file" id="imageInput" accept="image/*" />
         <button onclick="sendMessage()">Send</button>
     </div>
 

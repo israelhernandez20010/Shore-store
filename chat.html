@@ -1,0 +1,253 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with gpt-4o</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        #chat { 
+            max-width: 600px; 
+            margin: 50px auto; 
+            background: #fff; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+            padding: 20px;
+        }
+        #messages { 
+            border: 1px solid #ddd; 
+            padding: 10px; 
+            height: 300px; 
+            overflow-y: scroll; 
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background-color: #fafafa;
+        }
+        .message { 
+            margin-bottom: 15px; 
+            padding: 10px;
+            border-radius: 8px; 
+            background-color: #e8e8e8;
+        }
+        .user .name { color: #6200ea; font-weight: bold; }
+        .user .text { color: #6200ea; }
+        .bot .name { color: #d32f2f; font-weight: bold; }
+        .bot .text { color: #388e3c; }
+        .typing-indicator { font-style: italic; color: gray; }
+        .image { max-width: 100%; height: auto; margin-top: 5px; }
+        .error { color: #d32f2f; font-weight: bold; }
+        h3 { margin: 5px 0; }
+        ul { margin: 5px 0; padding-left: 20px; }
+        textarea, input[type="file"], button { 
+            font-size: 16px; 
+            padding: 10px; 
+            border-radius: 8px; 
+            border: 1px solid #ddd; 
+            margin: 5px 0;
+        }
+        button {
+            background-color: #6200ea; 
+            color: white; 
+            cursor: pointer; 
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3700b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat">
+        <input type="text" id="apiKeyInput" placeholder="Enter OpenAI API key" style="width: calc(100% - 22px);" />
+        <input type="text" id="modelInput" placeholder="Enter model (e.g., gpt-4o)" style="width: calc(100% - 22px);" />
+        <input type="text" id="botNameInput" placeholder="Enter bot name" style="width: calc(100% - 22px);" />
+        <input type="text" id="titleInput" placeholder="Enter title" style="width: calc(100% - 22px);" />
+        <div id="messages"></div>
+        <textarea id="input" placeholder="Type your message here" style="width: calc(100% - 22px); height: 100px;"></textarea>
+        <input type="file" id="imageInput" accept="image/*" style="width: calc(100% - 22px);" />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        let apiKey = ''; // Initialize an empty API key
+        let model = 'gpt-4o'; // Default model
+        let botName = 'gpt-4o'; // Default bot name
+        const endpoint = 'https://api.openai.com/v1/chat/completions';
+        let messageHistory = []; // Initialize an empty message history
+
+        document.getElementById('apiKeyInput').addEventListener('input', function() {
+            apiKey = this.value; // Update the API key as the user types
+        });
+
+        document.getElementById('modelInput').addEventListener('input', function() {
+            model = this.value; // Update the model as the user types
+        });
+
+        document.getElementById('botNameInput').addEventListener('input', function() {
+            botName = this.value; // Update the bot name as the user types
+        });
+
+        document.getElementById('titleInput').addEventListener('input', function() {
+            document.title = this.value; // Update the title as the user types
+        });
+
+        async function sendMessage() {
+            const input = document.getElementById('input');
+            const imageInput = document.getElementById('imageInput');
+            const message = input.value;
+            const file = imageInput.files[0];
+
+            if (!apiKey) {
+                displayError('API key is required.');
+                return;
+            }
+
+            if (!message && !file) return;
+
+            const userMessage = { role: 'user', content: [] };
+
+            if (message) {
+                displayMessage('You', message, 'user');
+                userMessage.content.push({ type: 'text', text: message });
+                input.value = '';
+            }
+
+            if (file) {
+                const base64Image = await toBase64(file);
+                displayImage('You', base64Image, 'user');
+                userMessage.content.push({
+                    type: "image_url",
+                    image_url: {
+                        url: `data:image/png;base64,${base64Image}`
+                    }
+                });
+                imageInput.value = '';
+            }
+
+            messageHistory.push(userMessage); // Add the user's message to the history
+
+            displayTypingIndicator();
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messageHistory // Send the entire message history
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const reply = formatReply(data.choices[0].message.content);
+
+                removeTypingIndicator();
+                displayMessage(botName, reply, 'bot');
+
+                messageHistory.push({ role: 'assistant', content: [{ type: 'text', text: reply }] }); // Add the bot's reply to the history
+            } catch (error) {
+                removeTypingIndicator();
+                displayError(error.message);
+            }
+        }
+
+        function displayMessage(name, message, role) {
+            const messages = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${role}`;
+
+            const nameElement = document.createElement('div');
+            nameElement.className = 'name';
+            nameElement.textContent = name;
+
+            const textElement = document.createElement('div');
+            textElement.className = 'text';
+            textElement.innerHTML = message;
+
+            messageElement.appendChild(nameElement);
+            messageElement.appendChild(textElement);
+
+            messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function displayImage(name, base64Image, role) {
+            const messages = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${role}`;
+
+            const nameElement = document.createElement('div');
+            nameElement.className = 'name';
+            nameElement.textContent = name;
+
+            const imageElement = document.createElement('img');
+            imageElement.className = 'image';
+            imageElement.src = `data:image/png;base64,${base64Image}`;
+
+            messageElement.appendChild(nameElement);
+            messageElement.appendChild(imageElement);
+
+            messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function displayTypingIndicator() {
+            const messages = document.getElementById('messages');
+            const typingElement = document.createElement('div');
+            typingElement.className = 'typing-indicator';
+            typingElement.textContent = `${botName} is typing...`;
+            typingElement.id = 'typing-indicator';
+
+            messages.appendChild(typingElement);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingElement = document.getElementById('typing-indicator');
+            if (typingElement) {
+                typingElement.remove();
+            }
+        }
+
+        function displayError(message) {
+            const messages = document.getElementById('messages');
+            const errorElement = document.createElement('div');
+            errorElement.className = 'error';
+            errorElement.textContent = message;
+
+            messages.appendChild(errorElement);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function formatReply(reply) {
+            const formatted = reply
+                .replace(/### (.*?)(\n|$)/g, '<h3>$1</h3>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+            
+            return formatted;
+        }
+    </script>
+</body>
+</html>

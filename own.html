@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>zukijourney GPT-4 Chatbot</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>zukijourney GPT-4 Chatbot</h1>
+    <form id="chatForm">
+        <label for="prompt">Enter your message:</label>
+        <input type="text" id="prompt" name="prompt" required>
+        <button type="submit">Send</button>
+    </form>
+    <div id="response"></div>
+    <div id="error" style="color: red;"></div>
+
+    <script>
+        const form = document.getElementById('chatForm');
+        const responseDiv = document.getElementById('response');
+        const errorDiv = document.getElementById('error');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const prompt = document.getElementById('prompt').value;
+            errorDiv.textContent = ''; // Clear any previous error
+
+            try {
+                const response = await axios.post('https://api.zukijourney.com/v1/completions', {
+                    model: 'gpt-4o-2024-08-06',
+                    messages: [
+                        { role: 'system', content: 'You are a helpful assistant.' },
+                        { role: 'user', content: prompt }
+                    ]
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer zu-368e3413d02f81f6d85dfd25352052ed'
+                    }
+                });
+
+                responseDiv.textContent = response.data.choices[0].message.content;
+            } catch (error) {
+                console.error(error);
+                errorDiv.textContent = 'An error occurred. Please try again later.';
+            }
+        });
+    </script>
+</body>
+</html>

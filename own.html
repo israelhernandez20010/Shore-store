@@ -7,23 +7,14 @@
 </head>
 <body>
     <h1>zukijourney GPT-4 Chatbot</h1>
-    <form id="chatForm">
-        <label for="prompt">Enter your message:</label>
-        <input type="text" id="prompt" name="prompt" required>
-        <button type="submit">Send</button>
-    </form>
-    <div id="response"></div>
-    <div id="error" style="color: red;"></div>
+    <input type="text" id="message-input" placeholder="Enter your message">
+    <button onclick="sendMessage()">Send</button>
+    <div id="response-container"></div>
 
     <script>
-        const form = document.getElementById('chatForm');
-        const responseDiv = document.getElementById('response');
-        const errorDiv = document.getElementById('error');
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const prompt = document.getElementById('prompt').value;
-            errorDiv.textContent = ''; // Clear any previous error
+        async function sendMessage() {
+            const prompt = document.getElementById('message-input').value;
+            document.getElementById('message-input').value = '';
 
             try {
                 const response = await axios.post('https://api.zukijourney.com/v1/completions', {
@@ -39,12 +30,17 @@
                     }
                 });
 
-                responseDiv.textContent = response.data.choices[0].message.content;
+                const responseText = response.data.choices[0].message.content;
+                const responseElement = document.createElement('div');
+                responseElement.textContent = responseText;
+                document.getElementById('response-container').appendChild(responseElement);
             } catch (error) {
-                console.error(error);
-                errorDiv.textContent = 'An error occurred. Please try again later.';
+                console.error('Error:', error);
+                const errorElement = document.createElement('div');
+                errorElement.textContent = 'An error occurred. Please try again later.';
+                document.getElementById('response-container').appendChild(errorElement);
             }
-        });
+        }
     </script>
 </body>
 </html>

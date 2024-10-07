@@ -34,7 +34,6 @@
             border-radius: 8px; 
             background-color: #e8e8e8;
             position: relative;
-            cursor: pointer;
         }
         .user .name { color: #6200ea; font-weight: bold; }
         .user .text { color: #6200ea; }
@@ -107,10 +106,10 @@
         .copy-button {
             display: none;
             position: absolute;
-            top: 10px;
-            right: 10px;
+            bottom: 5px;
+            right: 5px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
             color: #6200ea;
             background-color: transparent;
             border: none;
@@ -296,9 +295,9 @@
 
             messageElement.appendChild(nameElement);
             messageElement.appendChild(textElement);
-            messageElement.appendChild(copyButton);
 
             if (role === 'bot') {
+                messageElement.appendChild(copyButton);
                 messageElement.onclick = () => toggleCopyButton(copyButton);
             }
 
@@ -307,7 +306,7 @@
         }
 
         function toggleCopyButton(copyButton) {
-            copyButton.style.display = copyButton.style.display === 'block' ? 'none' : 'block';
+            copyButton.style.display = copyButton.style.display === 'inline-block' ? 'none' : 'inline-block';
         }
 
         function copyToClipboard(text) {

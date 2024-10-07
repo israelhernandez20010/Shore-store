@@ -223,7 +223,8 @@
             const userMessage = { role: 'user', content: [] };
 
             if (message) {
-                displayMessage('You', message, 'user');
+                const formattedMessage = convertMarkdownToHTML(message);
+                displayMessage('You', formattedMessage, 'user');
                 userMessage.content.push({ type: 'text', text: message });
                 input.value = '';
             }
@@ -358,11 +359,7 @@
         }
 
         function formatReply(reply) {
-            const formatted = reply
-                .replace(/### (.*?)(\n|$)/g, '<h3>$1</h3>')
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\n/g, '<br>');
-            
+            const formatted = convertMarkdownToHTML(reply);
             return formatted;
         }
 
@@ -374,6 +371,41 @@
             document.execCommand('copy');
             document.body.removeChild(textarea);
             alert('Message copied to clipboard');
+        }
+
+        function convertMarkdownToHTML(markdown) {
+            // Replace bold text
+            let html = markdown.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // Replace code blocks
+            html = html.replace(/```(.*?)```/gs, (match, p1) => {
+                // Split the code block into lines and join with <br> for HTML
+                const formattedCode = p1.split('\n').map(line => line.trim()).join('<br>');
+                return `<pre><code>${formattedCode}</code><button class="copy-button" onclick="copyCode(this)">Copy</button></pre>`;
+            });
+
+            // Replace newlines with paragraph tags
+            html = html.replace(/\n/g, '</p><p>');
+
+            return `<p>${html}</p>`;
+        }
+
+        function copyCode(button) {
+            const codeElement = button.previousElementSibling;
+            const range = document.createRange();
+            range.selectNodeContents(codeElement);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            try {
+                document.execCommand('copy');
+                alert('Code copied to clipboard!');
+            } catch (err) {
+                alert('Failed to copy code.');
+            }
+
+            selection.removeAllRanges();
         }
     </script>
 </body>

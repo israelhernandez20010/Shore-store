@@ -65,22 +65,6 @@
         button:hover {
             background-color: #3700b3;
         }
-        /* Copy button styles */
-        .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #6200ea;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 5px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .copy-btn:hover {
-            background-color: #3700b3;
-        }
         /* Modal styles */
         .modal {
             display: none; 
@@ -117,6 +101,21 @@
             color: black;
             text-decoration: none;
             cursor: pointer;
+        }
+        .copy-button {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background-color: #6200ea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px;
+            cursor: pointer;
+            display: none;
+        }
+        .message:hover .copy-button {
+            display: block;
         }
     </style>
 </head>
@@ -289,7 +288,7 @@
             textElement.innerHTML = message;
 
             const copyButton = document.createElement('button');
-            copyButton.className = 'copy-btn';
+            copyButton.className = 'copy-button';
             copyButton.textContent = 'Copy';
             copyButton.onclick = () => copyToClipboard(message);
 
@@ -368,11 +367,13 @@
         }
 
         function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Copied to clipboard');
-            }).catch(err => {
-                alert('Failed to copy text: ', err);
-            });
+            const textarea = document.createElement('textarea');
+            textarea.value = text.replace(/<br>/g, '\n').replace(/<[^>]+>/g, '');
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('Message copied to clipboard');
         }
     </script>
 </body>

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,6 +65,22 @@
         button:hover {
             background-color: #3700b3;
         }
+        /* Copy button styles */
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #6200ea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .copy-btn:hover {
+            background-color: #3700b3;
+        }
         /* Modal styles */
         .modal {
             display: none; 
@@ -102,18 +117,6 @@
             color: black;
             text-decoration: none;
             cursor: pointer;
-        }
-        .copy-button {
-            display: none;
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            color: #6200ea;
-            background-color: transparent;
-            border: none;
-            padding: 0;
         }
     </style>
 </head>
@@ -283,38 +286,19 @@
 
             const textElement = document.createElement('div');
             textElement.className = 'text';
-            textElement.innerHTML = message.replace(/\n/g, '<br>').replace(/ {2}/g, '&nbsp;&nbsp;');
+            textElement.innerHTML = message;
 
             const copyButton = document.createElement('button');
+            copyButton.className = 'copy-btn';
             copyButton.textContent = 'Copy';
-            copyButton.className = 'copy-button';
-            copyButton.onclick = (e) => {
-                e.stopPropagation();
-                copyToClipboard(message);
-            };
+            copyButton.onclick = () => copyToClipboard(message);
 
             messageElement.appendChild(nameElement);
             messageElement.appendChild(textElement);
-
-            if (role === 'bot') {
-                messageElement.appendChild(copyButton);
-                messageElement.onclick = () => toggleCopyButton(copyButton);
-            }
+            messageElement.appendChild(copyButton);
 
             messages.appendChild(messageElement);
             messages.scrollTop = messages.scrollHeight;
-        }
-
-        function toggleCopyButton(copyButton) {
-            copyButton.style.display = copyButton.style.display === 'inline-block' ? 'none' : 'inline-block';
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Message copied to clipboard');
-            }, (err) => {
-                console.error('Could not copy text: ', err);
-            });
         }
 
         function displayImage(name, base64Image, role) {
@@ -378,10 +362,17 @@
             const formatted = reply
                 .replace(/### (.*?)(\n|$)/g, '<h3>$1</h3>')
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\n/g, '<br>')
-                .replace(/ {2}/g, '&nbsp;&nbsp;'); // Replace multiple spaces with non-breaking spaces
+                .replace(/\n/g, '<br>');
             
             return formatted;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard');
+            }).catch(err => {
+                alert('Failed to copy text: ', err);
+            });
         }
     </script>
 </body>

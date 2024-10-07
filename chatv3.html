@@ -1,0 +1,375 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with gpt-4o</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        #chat { 
+            max-width: 600px; 
+            margin: 50px auto; 
+            background: #fff; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+            padding: 20px;
+        }
+        #messages { 
+            border: 1px solid #ddd; 
+            padding: 10px; 
+            height: 300px; 
+            overflow-y: scroll; 
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background-color: #fafafa;
+        }
+        .message { 
+            margin-bottom: 15px; 
+            padding: 10px;
+            border-radius: 8px; 
+            background-color: #e8e8e8;
+            position: relative;
+        }
+        .user .name { color: #6200ea; font-weight: bold; }
+        .user .text { color: #6200ea; }
+        .bot .name { color: #d32f2f; font-weight: bold; }
+        .bot .text { color: #388e3c; }
+        .typing-indicator { font-style: italic; color: gray; }
+        .image { max-width: 100%; height: auto; margin-top: 5px; }
+        .error { color: #d32f2f; font-weight: bold; }
+        h3 { margin: 5px 0; }
+        ul { margin: 5px 0; padding-left: 20px; }
+        textarea, input[type="file"], button { 
+            font-size: 16px; 
+            padding: 10px; 
+            border-radius: 8px; 
+            border: 1px solid #ddd; 
+            margin: 5px 0;
+            width: calc(100% - 22px);
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            height: 80px; /* Default height */
+        }
+        button {
+            background-color: #6200ea; 
+            color: white; 
+            cursor: pointer; 
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3700b3;
+        }
+        /* Modal styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgb(0,0,0); 
+            background-color: rgba(0,0,0,0.4); 
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; 
+            max-width: 500px;
+            border-radius: 8px;
+            overflow-y: auto; /* Enable vertical scrolling */
+            max-height: 400px; /* Set a maximum height */
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat">
+        <input type="text" id="apiKeyInput" placeholder="Enter OpenAI API key" />
+        <input type="text" id="modelInput" placeholder="Enter model (e.g., gpt-4o)" />
+        <button id="modelListBtn">Show Models</button>
+        <input type="text" id="botNameInput" placeholder="Enter bot name" />
+        <input type="text" id="titleInput" placeholder="Enter title" />
+        <div id="messages"></div>
+        <textarea id="input" placeholder="Type your message here"></textarea>
+        <input type="file" id="imageInput" accept="image/*" />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <!-- The Modal -->
+    <div id="modelModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>API SAMPLE</h2>
+            <ul>
+                <li>proj-xlJ-PWbKWptZT8P6N0GW0M9f2H7e2NDSBsM8EhJc3899SkzHi6GDCROn3T3BlbkFJYimcQUj4On7I8TfOYqEtiJFy4_HkZRJCbMdyuhESqBSK6oVDkV9A8-qcEA</li>
+            </ul>
+            <h2>Available Models</h2>
+            <h3>1. GPT-4o:</h3>
+            <ul>
+                <li>gpt-4o-2024-05-13: Points to this version.</li>
+                <li>gpt-4o-2024-08-06: Latest snapshot supporting Structured Outputs.</li>
+                <li>chatgpt-4o-latest: Dynamic model continuously updated to the current version in ChatGPT.</li>
+            </ul>
+            <h3>2. GPT-4o mini:</h3>
+            <ul>
+                <li>gpt-4o-mini-2024-07-18: Currently points to this version.</li>
+            </ul>
+            <h3>3. GPT-4:</h3>
+            <ul>
+                <li>gpt-4-0613: Snapshot from June 13th, 2023, with improved function calling support.</li>
+                <li>gpt-4-0314: Legacy snapshot from March 14th, 2023.</li>
+            </ul>
+            <h3>4. GPT-3.5 Turbo:</h3>
+            <ul>
+                <li>gpt-3.5-turbo-0125: Latest model with higher accuracy in requested formats.</li>
+                <li>gpt-3.5-turbo-1106: Improved instruction following, JSON mode, reproducible outputs.</li>
+                <li>gpt-3.5-turbo-instruct: Compatible with legacy completions endpoint.</li>
+            </ul>
+            <h3>5. chatgpt-4o-latest:</h3>
+            <ul>
+                <li>This model itself is a dynamic version that is continuously updated and does not have sub-versions.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let apiKey = ''; // Initialize an empty API key
+        let model = 'gpt-4o'; // Default model
+        let botName = 'gpt-4o'; // Default bot name
+        const endpoint = 'https://api.openai.com/v1/chat/completions';
+        let messageHistory = []; // Initialize an empty message history
+
+        document.getElementById('apiKeyInput').addEventListener('input', function() {
+            apiKey = this.value; // Update the API key as the user types
+        });
+
+        document.getElementById('modelInput').addEventListener('input', function() {
+            model = this.value; // Update the model as the user types
+        });
+
+        document.getElementById('botNameInput').addEventListener('input', function() {
+            botName = this.value; // Update the bot name as the user types
+        });
+
+        document.getElementById('titleInput').addEventListener('input', function() {
+            document.title = this.value; // Update the title as the user types
+        });
+
+        document.getElementById('modelListBtn').onclick = function() {
+            document.getElementById('modelModal').style.display = "block"; // Show the modal
+        }
+
+        const closeModal = document.getElementsByClassName("close")[0];
+        closeModal.onclick = function() {
+            document.getElementById('modelModal').style.display = "none"; // Hide the modal
+        }
+
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('modelModal')) {
+                document.getElementById('modelModal').style.display = "none"; // Hide the modal if clicked outside
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('input');
+            const imageInput = document.getElementById('imageInput');
+            const message = input.value;
+            const file = imageInput.files[0];
+
+            if (!apiKey) {
+                displayError('API key is required.');
+                return;
+            }
+
+            if (!message && !file) return;
+
+            const userMessage = { role: 'user', content: [] };
+
+            if (message) {
+                displayMessage('You', message, 'user');
+                userMessage.content.push({ type: 'text', text: message });
+                input.value = '';
+            }
+
+            if (file) {
+                const base64Image = await toBase64(file);
+                displayImage('You', base64Image, 'user');
+                userMessage.content.push({
+                    type: "image_url",
+                    image_url: {
+                        url: `data:image/png;base64,${base64Image}`
+                    }
+                });
+                imageInput.value = '';
+            }
+
+            messageHistory.push(userMessage); // Add the user's message to the history
+
+            displayTypingIndicator();
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messageHistory // Send the entire message history
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const reply = formatReply(data.choices[0].message.content);
+
+                removeTypingIndicator();
+                displayMessage(botName, reply, 'bot');
+
+                messageHistory.push({ role: 'assistant', content: [{ type: 'text', text: reply }] }); // Add the bot's reply to the history
+            } catch (error) {
+                removeTypingIndicator();
+                displayError(error.message);
+            }
+        }
+
+        function displayMessage(name, message, role) {
+            const messages = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${role}`;
+
+            const nameElement = document.createElement('div');
+            nameElement.className = 'name';
+            nameElement.textContent = name;
+
+            const textElement = document.createElement('div');
+            textElement.className = 'text';
+            textElement.innerHTML = message;
+
+            const copyButton = document.createElement('button');
+            copyButton.className = 'copy-btn';
+            copyButton.textContent = 'Copy';
+            copyButton.onclick = () => copyToClipboard(message);
+
+            messageElement.appendChild(nameElement);
+            messageElement.appendChild(textElement);
+            messageElement.appendChild(copyButton);
+
+            messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function displayImage(name, base64Image, role) {
+            const messages = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${role}`;
+
+            const nameElement = document.createElement('div');
+            nameElement.className = 'name';
+            nameElement.textContent = name;
+
+            const imageElement = document.createElement('img');
+            imageElement.className = 'image';
+            imageElement.src = `data:image/png;base64,${base64Image}`;
+
+            messageElement.appendChild(nameElement);
+            messageElement.appendChild(imageElement);
+
+            messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function displayTypingIndicator() {
+            const messages = document.getElementById('messages');
+            const typingElement = document.createElement('div');
+            typingElement.className = 'typing-indicator';
+            typingElement.textContent = `${botName} is typing...`;
+            typingElement.id = 'typing-indicator';
+
+            messages.appendChild(typingElement);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingElement = document.getElementById('typing-indicator');
+            if (typingElement) {
+                typingElement.remove();
+            }
+        }
+
+        function displayError(message) {
+            const messages = document.getElementById('messages');
+            const errorElement = document.createElement('div');
+            errorElement.className = 'error';
+            errorElement.textContent = message;
+
+            messages.appendChild(errorElement);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function formatReply(reply) {
+            const formatted = reply
+                .replace(/### (.*?)(\n|$)/g, '<h3>$1</h3>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+            
+            return formatted;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard');
+            }).catch(err => {
+                alert('Failed to copy text: ', err);
+            });
+        }
+    </script>
+</body>
+</html>

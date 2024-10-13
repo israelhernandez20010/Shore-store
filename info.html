@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zenith Digital Creations Chatbot</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f4f6f9; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
+        }
+        #chat-container {
+            width: 70%; 
+            height: 70%; 
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        #chatbox {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        #userInput {
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            width: calc(100% - 100px);
+            resize: none;
+            height: 50px;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        #sendButton {
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: #ffffff;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        #sendButton:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        .user {
+            background-color: #e0f7fa;
+            align-self: flex-end;
+            text-align: right;
+        }
+        .bot {
+            background-color: #e3f2fd;
+            align-self: flex-start;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chatbox"></div>
+        <div style="display: flex; align-items: center;">
+            <textarea id="userInput" placeholder="Type your message..."></textarea>
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        async function fetchBusinessDetails() {
+            const response = await fetch('info.txt');
+            if (!response.ok) {
+                throw new Error('Failed to fetch business details');
+            }
+            return await response.text();
+        }
+
+        function displayMessage(message, type) {
+            var chatbox = document.getElementById("chatbox");
+            var messageElement = document.createElement("div");
+            messageElement.className = 'message ' + type;
+            messageElement.innerHTML = message.replace(/\n\n/g, '<br><br>'); 
+            chatbox.appendChild(messageElement);
+            chatbox.scrollTop = chatbox.scrollHeight;
+            return messageElement;
+        }
+
+        document.getElementById("sendButton").addEventListener("click", function() {
+            var userInput = document.getElementById("userInput").value;
+            if (userInput.trim() === "") return;
+
+            displayMessage(userInput, 'user');
+            document.getElementById("userInput").value = "";
+
+            var typingIndicator = displayMessage("is typing...", 'bot');
+
+            getBotResponse(userInput).then(response => {
+                typingIndicator.remove();
+                displayMessage(response, 'bot');
+            }).catch(error => {
+                console.error('Error:', error);
+                typingIndicator.remove();
+                displayMessage("Sorry, something went wrong. Please try again later.", 'bot');
+            });
+        });
+
+        const apiKeyPart2Encrypted = 'U2FsdGVkX1/HW/klz9EMrLoES9I+f5+h57r6xKDSbEQ=';
+        const secretKey = 'el';
+
+        function decryptApiKeyPart2(encrypted) {
+            const bytes = CryptoJS.AES.decrypt(encrypted, secretKey);
+            return bytes.toString(CryptoJS.enc.Utf8);
+        }
+
+        async function getBotResponse(input) {
+            try {
+                const businessPrompt = await fetchBusinessDetails();
+                const apiKeyPart1 = 'sk-proj-MxlJ-PWbKWptZT8P6N0GW0M9f2H7e2NDSBsM8EhJc3899SkzHi6GDCROn3T3BlbkFJYimcQUj4On7I8TfOYqEtiJFy4_HkZRJCbMdyuhESqBSK6oVDkV9A8-';
+                const apiKeyPart2 = decryptApiKeyPart2(apiKeyPart2Encrypted); 
+                const apiKey = apiKeyPart1 + apiKeyPart2;
+                
+                const endpoint = 'https://api.openai.com/v1/chat/completions';
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4o-mini",
+                        messages: [
+                            { role: "system", content: businessPrompt },
+                            { role: "user", content: input }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                return data.choices[0].message.content.trim();
+            } catch (error) {
+                console.error('Error:', error);
+                return "Sorry, something went wrong. Please try again later.";
+            }
+        }
+
+        window.onload = function() {
+            displayMessage("Welcome to Zenith Digital Creations! How can I assist you today?", 'bot');
+        };
+    </script>
+</body>
+</html>

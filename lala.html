@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Diary</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .entry {
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .date {
+            font-weight: bold;
+            color: #555;
+        }
+        .content {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>My Diary</h1>
+    <div id="diary-content"></div>
+
+    <script>
+        // Function to fetch and display the content of info.txt
+        async function loadDiary() {
+            try {
+                const response = await fetch('info.txt');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const text = await response.text();
+                document.getElementById('diary-content').innerText = text;
+            } catch (error) {
+                console.error('There was a problem with the fetch operation:', error);
+            }
+        }
+
+        // Load the diary content when the page loads
+        window.onload = loadDiary;
+    </script>
+</body>
+</html>

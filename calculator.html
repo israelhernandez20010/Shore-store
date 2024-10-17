@@ -1,0 +1,31 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Percentage Increase Calculator</title>
+<script>
+function calculateIncrease() {
+    var oldValue = document.getElementById("oldValue").value;
+    var newValue = document.getElementById("newValue").value;
+    var increase = newValue - oldValue;
+    var percentageIncrease = (increase / oldValue) * 100;
+    document.getElementById("result").innerHTML = "Ang itinaas ay: " + percentageIncrease.toFixed(2) + "%";
+}
+</script>
+</head>
+<body>
+
+<h2>Percentage Increase Calculator</h2>
+
+<label for="oldValue">Lumang Halaga:</label><br>
+<input type="number" id="oldValue" name="oldValue"><br>
+<label for="newValue">Bagong Halaga:</label><br>
+<input type="number" id="newValue" name="newValue"><br><br>
+<button onclick="calculateIncrease()">Kalkulahin ang Itinaas</button>
+
+<p id="result"></p>
+
+</body>
+</html>

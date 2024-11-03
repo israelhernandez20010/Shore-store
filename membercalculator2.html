@@ -82,10 +82,10 @@
 <body>
 
   <div class="container">
-    <h1>Percentage Calculator</h1>
+    <h1>Member Percentage Calculator</h1>
     <input type="number" id="percentage" placeholder="Porsyento (%)" step="any">
     <input type="number" id="number" placeholder="Numero" step="any">
-    <button onclick="calculate()">Kalkulahin</button>
+    <button onclick="calculate()">Calculate</button>
     <button onclick="reset()">Reset</button>
     <div class="result" id="result"></div>
     <div class="result" id="totalResult"></div>
@@ -106,7 +106,7 @@
       var totalResult = result + number;
 
       document.getElementById('result').innerHTML = percentage + "% ng " + number + " ay " + result.toFixed(4);
-      document.getElementById('totalResult').innerHTML = "Kabuuang resulta: " + totalResult.toFixed(4);
+      document.getElementById('totalResult').innerHTML = "Kabuuang pera resulta: " + totalResult.toFixed(4);
     }
 
     function reset() {

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,38 +6,87 @@
     <title>Percentage Calculator</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
             padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            color: #333;
+            margin: 0;
+        }
+        .calculator {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-size: 1rem;
+            margin-bottom: 5px;
+            font-weight: 500;
         }
         input[type="number"] {
-            margin: 5px 0;
-            padding: 5px;
-            width: 100px;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
         }
         button {
-            padding: 5px 10px;
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
             margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
         }
         .result {
             margin-top: 20px;
             font-weight: bold;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        @media(max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .calculator {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <h1>Member Percentage Calculator</h1>
+    <div class="calculator">
+        <h1>Member Percentage Calculator</h1>
 
-    <label for="percentage">Percentage (%):</label><br>
-    <input type="number" id="percentage" step="0.01" placeholder="e.g. 14.99"><br>
+        <label for="percentage">Percentage (%):</label>
+        <input type="number" id="percentage" step="0.01" placeholder="e.g. 14.99">
 
-    <label for="number">Member Original Money:</label><br>
-    <input type="number" id="number" step="0.01" placeholder="e.g. 10"><br>
+        <label for="number">Member Original Money:</label>
+        <input type="number" id="number" step="0.01" placeholder="e.g. 10">
 
-    <button onclick="calculatePercentage()">Calculate</button>
+        <button onclick="calculatePercentage()">Calculate</button>
+        <button onclick="resetCalculator()">Reset</button>
 
-    <div class="result" id="result"></div>
-    <div class="result" id="total"></div>
+        <div class="result" id="result"></div>
+        <div class="result" id="total"></div>
+    </div>
 
     <script>
         function calculatePercentage() {
@@ -48,12 +96,19 @@
             if (!isNaN(percentage) && !isNaN(number)) {
                 const result = (percentage / 100) * number;
                 const total = result + number;
-                document.getElementById('result').innerText = `Result: ${result}`;
-                document.getElementById('total').innerText = `Member Total Money: ${total}`;
+                document.getElementById('result').innerText = `Result: ${result.toFixed(2)}`;
+                document.getElementById('total').innerText = `Member Total Money: ${total.toFixed(2)}`;
             } else {
                 document.getElementById('result').innerText = 'Please enter valid numbers.';
                 document.getElementById('total').innerText = '';
             }
+        }
+
+        function resetCalculator() {
+            document.getElementById('percentage').value = '';
+            document.getElementById('number').value = '';
+            document.getElementById('result').innerText = '';
+            document.getElementById('total').innerText = '';
         }
     </script>
 

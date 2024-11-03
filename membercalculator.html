@@ -49,6 +49,7 @@
         }
 
         .calculator input[type="number"] {
+            -moz-appearance: textfield;
             width: 100%;
             padding: 12px 15px;
             margin-top: 5px;
@@ -57,6 +58,12 @@
             border-radius: 10px;
             outline: none;
             transition: border 0.3s ease;
+        }
+
+        .calculator input[type="number"]::-webkit-outer-spin-button,
+        .calculator input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .calculator input[type="number"]:focus {
@@ -90,23 +97,13 @@
             background: #c53030;
         }
 
-        .result, .steps {
+        .result {
             margin-top: 20px;
             font-size: 18px;
             font-weight: 500;
             color: #333;
             text-align: left;
-        }
-
-        .steps h2 {
-            font-size: 20px;
-            margin-bottom: 10px;
-        }
-
-        .steps p {
-            font-size: 16px;
-            margin-bottom: 5px;
-            line-height: 1.5;
+            word-wrap: break-word;
         }
     </style>
 </head>
@@ -116,42 +113,61 @@
         <h1>Member Percentage Calculator</h1>
 
         <label for="percentage">Percentage (%):</label>
-        <input type="number" id="percentage" step="0.01" placeholder="e.g. 14.99" value="14.99">
+        <input type="number" id="percentage" step="0.0001" placeholder="e.g. 14.99" value="14.99">
 
         <label for="number">Original Amount:</label>
-        <input type="number" id="number" step="0.01" placeholder="e.g. 10" value="10">
+        <input type="number" id="number" step="0.0001" placeholder="e.g. 10" value="10">
 
         <button onclick="calculatePercentage()">Calculate</button>
         <button class="reset" onclick="resetCalculator()">Reset</button>
 
         <div class="result" id="result"></div>
         <div class="result" id="total"></div>
-        <div class="steps" id="steps"></div>
     </div>
 
     <script>
         function calculatePercentage() {
-            const percentage = parseFloat(document.getElementById('percentage').value);
-            const number = parseFloat(document.getElementById('number').value);
+            const percentageInput = document.getElementById('percentage').value;
+            const numberInput = document.getElementById('number').value;
 
-            if (!isNaN(percentage) && !isNaN(number)) {
-                const calculatedPercentage = (percentage / 100) * number;
-                const totalAmount = number + calculatedPercentage;
+            // Parse inputs as precise decimal numbers
+            const percentage = parseDecimal(percentageInput);
+            const number = parseDecimal(numberInput);
 
-                // Display results
-                document.getElementById('result').innerText = `Calculated Percentage: ${calculatedPercentage.toFixed(3)}`;
-                document.getElementById('total').innerText = `New Total Amount: ${totalAmount.toFixed(3)}`;
+            if (percentage !== null && number !== null) {
+                // Perform precise calculation
+                const calculatedPercentage = percentage.times(number).dividedBy(100);
+                const totalAmount = number.plus(calculatedPercentage);
 
-                // Display calculation steps
-                const steps = `
-                <h2>Calculation Steps</h2>
-                <p><strong>Step 1:</strong> Calculate ${percentage}% of ${number}</p>
-                <p>Calculated Percentage = (${percentage} / 100) × ${number} = ${(percentage / 100).toFixed(4)} × ${number} = ${calculatedPercentage.toFixed(3)}</p>
-                <p><strong>Step 2:</strong> Add the Calculated Percentage to the Original Amount</p>
-                <p>New Total Amount = Original Amount + Calculated Percentage = ${number} + ${calculatedPercentage.toFixed(3)} = ${totalAmount.toFixed(3)}</p>
-                `;
-
-                document.getElementById('steps').innerHTML = steps;
-
+                // Display results without rounding
+                document.getElementById('result').innerText = `Calculated Percentage: ${calculatedPercentage.toString()}`;
+                document.getElementById('total').innerText = `New Total Amount: ${totalAmount.toString()}`;
             } else {
-                document.getElementBy
+                document.getElementById('result').innerText = 'Please enter valid numbers.';
+                document.getElementById('total').innerText = '';
+            }
+        }
+
+        function resetCalculator() {
+            document.getElementById('percentage').value = '';
+            document.getElementById('number').value = '';
+            document.getElementById('result').innerText = '';
+            document.getElementById('total').innerText = '';
+        }
+
+        // Function to parse decimal inputs with high precision
+        function parseDecimal(value) {
+            if (value === '') return null;
+            try {
+                return new Decimal(value);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // Include Decimal.js library for precise decimal calculations
+    </script>
+    <!-- Include Decimal.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/decimal.js/10.3.1/decimal.min.js" integrity="sha512-BuOwMykTcCNmwHIwt1NKox+ZJZ5SBpI/t6HRDAzFpoZsVwC4xXeUg1WEBT8zp42rdAD6I+eN0eLzArcWYX0f9w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</body>
+</html>

@@ -101,8 +101,8 @@
             if (!isNaN(percentage) && !isNaN(number)) {
                 const result = (percentage / 100) * number;
                 const total = result + number;
-                document.getElementById('result').innerText = `Result: ${result.toFixed(2)}`;
-                document.getElementById('total').innerText = `Member Total Money: ${total.toFixed(2)}`;
+                document.getElementById('result').innerText = `Result: ${result}`;
+                document.getElementById('total').innerText = `Member Total Money: ${total}`;
             } else {
                 document.getElementById('result').innerText = 'Please enter valid numbers.';
                 document.getElementById('total').innerText = '';

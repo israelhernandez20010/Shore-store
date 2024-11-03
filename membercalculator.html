@@ -73,7 +73,7 @@
 
             if (!isNaN(percentage) && !isNaN(number)) {
                 const result = (percentage / 100) * number;
-                const total = result + number;
+                const total = number + result;
                 document.getElementById('result').innerText = `Result: ${result.toFixed(2)}`;
                 document.getElementById('total').innerText = `Member Total Money: ${total.toFixed(2)}`;
             } else {

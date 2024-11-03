@@ -90,11 +90,23 @@
             background: #c53030;
         }
 
-        .result {
+        .result, .steps {
             margin-top: 20px;
             font-size: 18px;
             font-weight: 500;
             color: #333;
+            text-align: left;
+        }
+
+        .steps h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .steps p {
+            font-size: 16px;
+            margin-bottom: 5px;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -104,16 +116,17 @@
         <h1>Member Percentage Calculator</h1>
 
         <label for="percentage">Percentage (%):</label>
-        <input type="number" id="percentage" step="0.01" placeholder="e.g. 14.99">
+        <input type="number" id="percentage" step="0.01" placeholder="e.g. 14.99" value="14.99">
 
         <label for="number">Original Amount:</label>
-        <input type="number" id="number" step="0.01" placeholder="e.g. 100">
+        <input type="number" id="number" step="0.01" placeholder="e.g. 10" value="10">
 
         <button onclick="calculatePercentage()">Calculate</button>
         <button class="reset" onclick="resetCalculator()">Reset</button>
 
         <div class="result" id="result"></div>
         <div class="result" id="total"></div>
+        <div class="steps" id="steps"></div>
     </div>
 
     <script>
@@ -122,23 +135,23 @@
             const number = parseFloat(document.getElementById('number').value);
 
             if (!isNaN(percentage) && !isNaN(number)) {
-                const result = (percentage / 100) * number;
-                const total = number + result;
-                document.getElementById('result').innerText = `Calculated Percentage: ${result.toFixed(2)}`;
-                document.getElementById('total').innerText = `New Total Amount: ${total.toFixed(2)}`;
+                const calculatedPercentage = (percentage / 100) * number;
+                const totalAmount = number + calculatedPercentage;
+
+                // Display results
+                document.getElementById('result').innerText = `Calculated Percentage: ${calculatedPercentage.toFixed(3)}`;
+                document.getElementById('total').innerText = `New Total Amount: ${totalAmount.toFixed(3)}`;
+
+                // Display calculation steps
+                const steps = `
+                <h2>Calculation Steps</h2>
+                <p><strong>Step 1:</strong> Calculate ${percentage}% of ${number}</p>
+                <p>Calculated Percentage = (${percentage} / 100) × ${number} = ${(percentage / 100).toFixed(4)} × ${number} = ${calculatedPercentage.toFixed(3)}</p>
+                <p><strong>Step 2:</strong> Add the Calculated Percentage to the Original Amount</p>
+                <p>New Total Amount = Original Amount + Calculated Percentage = ${number} + ${calculatedPercentage.toFixed(3)} = ${totalAmount.toFixed(3)}</p>
+                `;
+
+                document.getElementById('steps').innerHTML = steps;
+
             } else {
-                document.getElementById('result').innerText = 'Please enter valid numbers.';
-                document.getElementById('total').innerText = '';
-            }
-        }
-
-        function resetCalculator() {
-            document.getElementById('percentage').value = '';
-            document.getElementById('number').value = '';
-            document.getElementById('result').innerText = '';
-            document.getElementById('total').innerText = '';
-        }
-    </script>
-
-</body>
-</html>
+                document.getElementBy

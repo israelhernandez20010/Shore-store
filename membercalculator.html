@@ -6,87 +6,65 @@
     <title>Percentage Calculator</title>
     <style>
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-family: Arial, sans-serif;
             padding: 20px;
-            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            background: linear-gradient(135deg, #74ebd5, #acb6e5);
             color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
             margin: 0;
         }
-        .calculator {
-            max-width: 400px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
         h1 {
-            text-align: center;
-            font-weight: 300;
             margin-bottom: 20px;
         }
-        label {
-            display: block;
-            font-size: 1rem;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
         input[type="number"] {
-            width: 100%;
-            padding: 12px 15px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 10px;
+            width: calc(100% - 24px);
+            max-width: 300px;
+            border: 1px solid #ccc;
             border-radius: 5px;
-            font-size: 1rem;
-            box-sizing: border-box;
         }
         button {
-            width: 100%;
-            padding: 12px;
-            font-size: 1rem;
+            padding: 10px 20px;
             margin-top: 10px;
             border: none;
             border-radius: 5px;
-            background: #007BFF;
+            background-color: #4CAF50;
             color: white;
             cursor: pointer;
+            width: calc(100% - 24px);
+            max-width: 300px;
         }
         button:hover {
-            background: #0056b3;
+            background-color: #45a049;
         }
         .result {
             margin-top: 20px;
             font-weight: bold;
-            font-size: 1.1rem;
+            max-width: 300px;
             text-align: center;
-        }
-        @media(max-width: 480px) {
-            body {
-                padding: 10px;
-            }
-            .calculator {
-                padding: 20px;
-            }
         }
     </style>
 </head>
 <body>
 
-    <div class="calculator">
-        <h1>Member Percentage Calculator</h1>
+    <h1>Member Percentage Calculator</h1>
 
-        <label for="percentage">Percentage (%):</label>
-        <input type="number" id="percentage" step="0.01" placeholder="e.g. 14.99">
+    <label for="percentage">Percentage (%):</label><br>
+    <input type="number" id="percentage" step="0.01" placeholder="e.g. 14.99"><br>
 
-        <label for="number">Member Original Money:</label>
-        <input type="number" id="number" step="0.01" placeholder="e.g. 10">
+    <label for="number">Member Original Money:</label><br>
+    <input type="number" id="number" step="0.01" placeholder="e.g. 10"><br>
 
-        <button onclick="calculatePercentage()">Calculate</button>
-        <button onclick="resetCalculator()">Reset</button>
+    <button onclick="calculatePercentage()">Calculate</button>
+    <button onclick="resetCalculator()">Reset</button>
 
-        <div class="result" id="result"></div>
-        <div class="result" id="total"></div>
-    </div>
+    <div class="result" id="result"></div>
+    <div class="result" id="total"></div>
 
     <script>
         function calculatePercentage() {

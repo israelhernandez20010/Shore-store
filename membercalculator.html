@@ -1,44 +1,120 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Member Percentage Calculator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Percentage Calculator</title>
+    <!-- Google Fonts for premium look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
+        /* Reset some default styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
         }
-        input[type="number"] {
-            margin: 5px 0;
-            padding: 5px;
-            width: 100px;
+
+        .calculator {
+            background: #fff;
+            padding: 30px 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
         }
-        button {
-            padding: 5px 10px;
+
+        .calculator h1 {
+            margin-bottom: 20px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .calculator label {
+            display: block;
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: 500;
+            text-align: left;
+        }
+
+        .calculator input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            margin-top: 5px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: border 0.3s ease;
+        }
+
+        .calculator input[type="number"]:focus {
+            border-color: #667eea;
+        }
+
+        .calculator button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            background: #667eea;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .calculator button:hover {
+            background: #5a67d8;
+        }
+
+        .calculator button.reset {
+            background: #e53e3e;
             margin-top: 10px;
         }
+
+        .calculator button.reset:hover {
+            background: #c53030;
+        }
+
         .result {
             margin-top: 20px;
-            font-weight: bold;
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
         }
     </style>
 </head>
 <body>
 
-    <h1>Member Percentage Calculator</h1>
+    <div class="calculator">
+        <h1>Member Percentage Calculator</h1>
 
-    <label for="percentage">Percentage (%):</label><br>
-    <input type="number" id="percentage" step="0.01" placeholder="e.g. 14.99"><br>
+        <label for="percentage">Percentage (%):</label>
+        <input type="number" id="percentage" step="0.01" placeholder="e.g. 14.99">
 
-    <label for="number">Member Original Money:</label><br>
-    <input type="number" id="number" step="0.01" placeholder="e.g. 10"><br>
+        <label for="number">Original Amount:</label>
+        <input type="number" id="number" step="0.01" placeholder="e.g. 100">
 
-    <button onclick="calculatePercentage()">Calculate</button>
+        <button onclick="calculatePercentage()">Calculate</button>
+        <button class="reset" onclick="resetCalculator()">Reset</button>
 
-    <div class="result" id="result"></div>
-    <div class="result" id="total"></div>
+        <div class="result" id="result"></div>
+        <div class="result" id="total"></div>
+    </div>
 
     <script>
         function calculatePercentage() {
@@ -47,13 +123,20 @@
 
             if (!isNaN(percentage) && !isNaN(number)) {
                 const result = (percentage / 100) * number;
-                const total = result + number;
-                document.getElementById('result').innerText = `Result: ${result}`;
-                document.getElementById('total').innerText = `Member Total Money: ${total}`;
+                const total = number + result;
+                document.getElementById('result').innerText = `Calculated Percentage: ${result.toFixed(2)}`;
+                document.getElementById('total').innerText = `New Total Amount: ${total.toFixed(2)}`;
             } else {
                 document.getElementById('result').innerText = 'Please enter valid numbers.';
                 document.getElementById('total').innerText = '';
             }
+        }
+
+        function resetCalculator() {
+            document.getElementById('percentage').value = '';
+            document.getElementById('number').value = '';
+            document.getElementById('result').innerText = '';
+            document.getElementById('total').innerText = '';
         }
     </script>
 

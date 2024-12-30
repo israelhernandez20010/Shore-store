@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Calculator with Daily Interest</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f9;
+        }
+        .container {
+            width: 90%;
+            max-width: 500px;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .breakdown {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #eef;
+            border-radius: 5px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Loan Calculator</h1>
+        <div class="form-group">
+            <label for="initialLoan">Initial Loan Amount:</label>
+            <input type="number" id="initialLoan" placeholder="Enter initial loan amount">
+            <label for="initialLoanDate">Initial Loan Date:</label>
+            <input type="date" id="initialLoanDate">
+        </div>
+        <div class="form-group" id="additionalLoans">
+            <label>Additional Loans:</label>
+            <input type="number" placeholder="Enter additional loan amount">
+            <input type="date" placeholder="Enter date of additional loan">
+        </div>
+        <button onclick="addAdditionalLoan()">Add Another Loan</button>
+        <div class="form-group" id="partialPayments">
+            <label>Partial Payments:</label>
+            <input type="number" placeholder="Enter payment amount">
+            <input type="date" placeholder="Enter payment date">
+        </div>
+        <button onclick="addPartialPayment()">Add Another Payment</button>
+        <button onclick="calculateLoan()">Calculate</button>
+        <div class="result" id="result"></div>
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        function addAdditionalLoan() {
+            const loansContainer = document.getElementById('additionalLoans');
+            const loanInput = document.createElement('input');
+            loanInput.type = 'number';
+            loanInput.placeholder = 'Enter additional loan amount';
+            const dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            loansContainer.appendChild(loanInput);
+            loansContainer.appendChild(dateInput);
+        }
+
+        function addPartialPayment() {
+            const paymentsContainer = document.getElementById('partialPayments');
+            const paymentInput = document.createElement('input');
+            paymentInput.type = 'number';
+            paymentInput.placeholder = 'Enter payment amount';
+            const dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            paymentsContainer.appendChild(paymentInput);
+            paymentsContainer.appendChild(dateInput);
+        }
+
+        function calculateLoan() {
+            document.getElementById('error').innerText = ''; // Clear previous errors
+            let totalAmount = 0;
+            let resultText = '<div class="breakdown"><strong>Loan Details:</strong><br>';
+            const today = new Date();
+            const oneMonth = 30; // assuming 30 days a month
+
+            // Initial Loan Calculation
+            const initialLoan = parseFloat(document.getElementById('initialLoan').value);
+            const initialLoanDate = new Date(document.getElementById('initialLoanDate').value);
+            if (initialLoan > 0 && !isNaN(initialLoanDate)) {
+                let initialInterest = initialLoan * 0.20;
+                totalAmount += initialLoan + initialInterest;
+                resultText += `Initial Loan: PHP ${initialLoan.toFixed(2)} on ${initialLoanDate.toISOString().split('T')[0]}<br>`;
+                resultText += `Interest (20%): PHP ${initialInterest.toFixed(2)}<br>`;
+
+                const daysElapsed = Math.floor((today - initialLoanDate) / (1000 * 60 * 60 * 24));
+                if (daysElapsed > oneMonth) {
+                    const dailyInterestRate = (initialLoan * 0.20) / oneMonth;
+                    const additionalInterest = (daysElapsed - oneMonth) * dailyInterestRate;
+                    totalAmount += additionalInterest;
+                    resultText += `Additional Interest for ${daysElapsed - oneMonth} days: PHP ${additionalInterest.toFixed(2)}<br>`;
+                }
+            } else if (initialLoan > 0) {
+                document.getElementById('error').innerText = 'Please enter a valid date for the initial loan.';
+                return;
+            }
+
+            // Additional Loans Calculation
+            const loanInputs = document.querySelectorAll('#additionalLoans input[type="number"]');
+            const loanDates = document.querySelectorAll('#additionalLoans input[type="date"]');
+            loanInputs.forEach((input, index) => {
+                const loanAmount = parseFloat(input.value);
+                const loanDate = new Date(loanDates[index].value);
+                if (loanAmount > 0 && !isNaN(loanDate)) {
+                    totalAmount += loanAmount;
+                    resultText += `Additional Loan: PHP ${loanAmount.toFixed(2)} on ${loanDate.toISOString().split('T')[0]}<br>`;
+
+                    const daysElapsed = Math.floor((today - loanDate) / (1000 * 60 * 60 * 24));
+                    if (daysElapsed > oneMonth) {
+                        const dailyInterestRate = (loanAmount * 0.20) / oneMonth;
+                        const additionalInterest = (daysElapsed - oneMonth) * dailyInterestRate;
+                        totalAmount += additionalInterest;
+                        resultText += `Additional Interest for ${daysElapsed - oneMonth} days: PHP ${additionalInterest.toFixed(2)}<br>`;
+                    }
+                } else if (loanAmount > 0) {
+                    document.getElementById('error').innerText = 'Please enter a valid date for the additional loan.';
+                    return;
+                }
+            });
+
+            // Partial Payments Calculation
+            let totalPayments = 0;
+            const paymentInputs = document.querySelectorAll('#partialPayments input[type="number"]');
+            const paymentDates = document.querySelectorAll('#partialPayments input[type="date"]');
+            paymentInputs.forEach((input, index) => {
+                const paymentAmount = parseFloat(input.value);
+                const paymentDate = new Date(paymentDates[index].value);
+                if (paymentAmount > 0 && !isNaN(paymentDate)) {
+                    totalPayments += paymentAmount;
+                    resultText += `Payment: PHP ${paymentAmount.toFixed(2)} on ${paymentDate.toISOString().split('T')[0]}<br>`;
+                } else if (paymentAmount > 0) {
+                    document.getElementById('error').innerText = 'Please enter a valid date for the payment.';
+                    return;
+                }
+            });
+
+            // Calculate Total Due
+            totalAmount -= totalPayments;
+            resultText += `<br>Total Payments: PHP ${totalPayments.toFixed(2)}<br>`;
+            resultText += `<strong>Remaining Balance: PHP ${totalAmount.toFixed(2)}</strong></div>`;
+
+            document.getElementById('result').innerHTML = resultText;
+        }
+    </script>
+</body>
+</html>

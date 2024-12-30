@@ -59,6 +59,10 @@
             color: red;
             margin-top: 10px;
         }
+        .balance {
+            color: red;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -149,12 +153,10 @@
                     resultText += `Additional Loan: PHP ${loanAmount.toFixed(2)} on ${loanDate.toISOString().split('T')[0]}<br>`;
 
                     const daysElapsed = Math.floor((today - loanDate) / (1000 * 60 * 60 * 24));
-                    if (daysElapsed > oneMonth) {
-                        const dailyInterestRate = (loanAmount * 0.20) / oneMonth;
-                        const additionalInterest = (daysElapsed - oneMonth) * dailyInterestRate;
-                        totalAmount += additionalInterest;
-                        resultText += `Additional Interest for ${daysElapsed - oneMonth} days: PHP ${additionalInterest.toFixed(2)}<br>`;
-                    }
+                    const dailyInterestRate = (loanAmount * 0.20) / oneMonth;
+                    const additionalInterest = daysElapsed * dailyInterestRate;
+                    totalAmount += additionalInterest;
+                    resultText += `Interest for ${daysElapsed} days: PHP ${additionalInterest.toFixed(2)}<br>`;
                 } else if (loanAmount > 0) {
                     document.getElementById('error').innerText = 'Please enter a valid date for the additional loan.';
                     return;
@@ -180,7 +182,7 @@
             // Calculate Total Due
             totalAmount -= totalPayments;
             resultText += `<br>Total Payments: PHP ${totalPayments.toFixed(2)}<br>`;
-            resultText += `<strong>Remaining Balance: PHP ${totalAmount.toFixed(2)}</strong></div>`;
+            resultText += `<strong class="balance">Remaining Balance as of ${today.toISOString().split('T')[0]}: PHP ${totalAmount.toFixed(2)}</strong></div>`;
 
             document.getElementById('result').innerHTML = resultText;
         }

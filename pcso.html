@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Ensures the website is responsive on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCSO Lottery Number Generator</title>
+    <!-- Import Google Fonts for modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset default margins and paddings */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f5f7fa; /* Light background */
+            color: #333;
+        }
+
+        header, footer {
+            background: #2c3e50; /* Dark header and footer */
+            color: #ecf0f1;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .buttons button {
+            margin: 10px;
+            padding: 15px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            background: #3498db; /* Button color */
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .buttons button:hover {
+            background: #2980b9; /* Darker on hover */
+            transform: translateY(-3px);
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .generated-numbers {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .copy-button {
+            padding: 12px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            background: #27ae60; /* Copy button color */
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .copy-button:hover {
+            background: #219150; /* Darker on hover */
+            transform: translateY(-3px);
+        }
+
+        @media (max-width: 600px) {
+            .buttons button {
+                width: 100%;
+                margin: 10px 0;
+            }
+
+            .copy-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PCSO Lottery Number Generator</h1>
+    </header>
+
+    <div class="container">
+        <div class="buttons">
+            <button onclick="generateLottoNumbers(42, 6)">Generate 6/42 Lotto Numbers</button>
+            <button onclick="generateLottoNumbers(45, 6)">Generate 6/45 Lotto Numbers</button>
+            <button onclick="generateLottoNumbers(49, 6)">Generate 6/49 Lotto Numbers</button>
+            <button onclick="generateLottoNumbers(55, 6)">Generate 6/55 Lotto Numbers</button>
+            <button onclick="generateLottoNumbers(58, 6)">Generate 6/58 Lotto Numbers</button>
+            <button onclick="generateDigitNumbers(3)">Generate 3D Lotto Numbers</button>
+            <button onclick="generateDigitNumbers(4)">Generate 4D Lotto Numbers</button>
+            <button onclick="generateDigitNumbers(6)">Generate 6D Lotto Numbers</button>
+        </div>
+
+        <h2>Generated Numbers:</h2>
+        <p class="generated-numbers" id="numbers"></p>
+        <button class="copy-button" onclick="copyNumbers()">Copy Numbers</button>
+    </div>
+
+    <footer>
+        &copy; 2023 PCSO Lottery Number Generator
+    </footer>
+
+    <script>
+        function generateLottoNumbers(max, count) {
+            const numbers = [];
+            while (numbers.length < count) {
+                const num = Math.floor(Math.random() * max) + 1;
+                if (!numbers.includes(num)) {
+                    numbers.push(num);
+                }
+            }
+            numbers.sort((a, b) => a - b);
+            document.getElementById('numbers').textContent = numbers.join(', ');
+        }
+
+        function generateDigitNumbers(digits) {
+            let numbers = '';
+            for (let i = 0; i < digits; i++) {
+                numbers += Math.floor(Math.random() * 10);
+            }
+            document.getElementById('numbers').textContent = numbers;
+        }
+
+        function copyNumbers() {
+            const numbersText = document.getElementById('numbers').textContent;
+            if (!numbersText) {
+                alert('Please generate numbers first.');
+                return;
+            }
+
+            // Create a temporary textarea element
+            const textarea = document.createElement('textarea');
+            textarea.value = numbersText;
+            // Avoid showing the textarea on the page
+            textarea.style.position = 'fixed';
+            textarea.style.top = '0';
+            textarea.style.left = '0';
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.padding = '0';
+            textarea.style.border = 'none';
+            textarea.style.outline = 'none';
+            textarea.style.boxShadow = 'none';
+            textarea.style.background = 'transparent';
+            document.body.appendChild(textarea);
+
+            // Select the text
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // For mobile devices
+
+            try {
+                // Copy the text
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    alert('Numbers copied to clipboard!');
+                } else {
+                    alert('Failed to copy numbers.');
+                }
+            } catch (err) {
+                alert('Failed to copy numbers.');
+            }
+            document.body.removeChild(textarea);
+        }
+    </script>
+</body>
+</html>

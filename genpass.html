@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Password Generator</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(-45deg, #1e3c72, #2a5298, #00ffcc, #00bfff);
+        background-size: 400% 400%;
+        animation: gradientBG 10s ease infinite;
+        color: white;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    @keyframes gradientBG {
+        0% {background-position: 0% 50%;}
+        50% {background-position: 100% 50%;}
+        100% {background-position: 0% 50%;}
+    }
+    .container {
+        background: rgba(255,255,255,0.08);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 25px;
+        max-width: 450px;
+        width: 100%;
+        box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+        text-align: center;
+        animation: popUp 0.6s ease;
+    }
+    @keyframes popUp {
+        0% { transform: scale(0.7); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    h1 {
+        margin-bottom: 15px;
+        font-size: 1.6rem;
+        background: linear-gradient(90deg, #00ffcc, #00bfff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    input[type="number"], input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        font-size: 1.1rem;
+        border: none;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        text-align: center;
+        transition: background 0.3s;
+    }
+    input:focus {
+        outline: 2px solid #00ffcc;
+        background: rgba(255, 255, 255, 0.3);
+    }
+    .length-input {
+        max-width: 80px;
+        display: inline-block;
+    }
+    .options {
+        text-align: left;
+        font-size: 0.9rem;
+        margin: 10px 0;
+    }
+    .options label {
+        display: block;
+        margin: 5px 0;
+    }
+    button {
+        padding: 10px 15px;
+        font-size: 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background: linear-gradient(90deg, #00ffcc, #00bfff);
+        color: #333;
+        margin: 5px;
+        transition: transform 0.2s, box-shadow 0.3s;
+    }
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .strength {
+        margin-top: 10px;
+        font-weight: 600;
+        transition: color 0.3s;
+    }
+    .progress-bar {
+        background: rgba(255,255,255,0.2);
+        border-radius: 8px;
+        overflow: hidden;
+        height: 10px;
+        margin-top: 6px;
+    }
+    .progress-fill {
+        height: 100%;
+        width: 0%;
+        transition: width 0.4s ease-in-out;
+    }
+    @media (max-width: 480px) {
+        h1 { font-size: 1.3rem; }
+        button { width: 100%; margin-top: 5px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔐 Ultimate Password Generator</h1>
+    <input type="number" id="length" class="length-input" value="12" min="4" max="50">
+    <div class="options">
+        <label><input type="checkbox" id="upcase" checked> Include Uppercase (A-Z)</label>
+        <label><input type="checkbox" id="lowcase" checked> Include Lowercase (a-z)</label>
+        <label><input type="checkbox" id="numbers" checked> Include Numbers (0-9)</label>
+        <label><input type="checkbox" id="symbols" checked> Include Symbols (!@#$...)</label>
+    </div>
+    <input type="text" id="password" readonly placeholder="Your password here">
+    <br>
+    <button onclick="generatePassword()">Generate</button>
+    <button onclick="copyPassword()">Copy</button>
+    <div id="strength" class="strength">Strength: -</div>
+    <div class="progress-bar">
+        <div id="progress-fill" class="progress-fill"></div>
+    </div>
+</div>
+
+<script>
+function generatePassword() {
+    const length = document.getElementById('length').value;
+    let charset = "";
+    if (document.getElementById('lowcase').checked) charset += "abcdefghijklmnopqrstuvwxyz";
+    if (document.getElementById('upcase').checked) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (document.getElementById('numbers').checked) charset += "0123456789";
+    if (document.getElementById('symbols').checked) charset += "!@#$%^&*()_+[]{}<>?";
+
+    if (charset === "") {
+        alert("⚠️ Please select at least one character type!");
+        return;
+    }
+
+    let password = "";
+    for (let i = 0; i < length; i++) {
+        password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+
+    document.getElementById('password').value = password;
+    checkStrength(password);
+}
+
+function copyPassword() {
+    const passField = document.getElementById('password');
+    passField.select();
+    passField.setSelectionRange(0, 99999); // mobile friendly
+    document.execCommand('copy');
+    showCopied();
+}
+
+function showCopied() {
+    let alertBox = document.createElement('div');
+    alertBox.textContent = "✅ Password copied!";
+    alertBox.style.position = 'fixed';
+    alertBox.style.bottom = '20px';
+    alertBox.style.left = '50%';
+    alertBox.style.transform = 'translateX(-50%)';
+    alertBox.style.background = 'rgba(0,0,0,0.8)';
+    alertBox.style.color = '#00ffcc';
+    alertBox.style.padding = '10px 20px';
+    alertBox.style.borderRadius = '8px';
+    alertBox.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+    alertBox.style.zIndex = '999';
+    document.body.appendChild(alertBox);
+    setTimeout(() => {
+        alertBox.remove();
+    }, 1500);
+}
+
+function checkStrength(password) {
+    let strengthText = document.getElementById('strength');
+    let progressFill = document.getElementById('progress-fill');
+    let score = 0;
+
+    if (password.length >= 8) score++;
+    if (password.length >= 12) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[!@#$%^&*()_+\[\]{}<>?]/.test(password)) score++;
+
+    let strengthLabel = "";
+    let strengthColor = "";
+    let fillWidth = (score / 5) * 100;
+
+    if (score <= 2) {
+        strengthLabel = "Strength: Weak ❌";
+        strengthColor = "#ff4d4d";
+    } else if (score <= 4) {
+        strengthLabel = "Strength: Medium ⚠️";
+        strengthColor = "#ffcc00";
+    } else {
+        strengthLabel = "Strength: Strong ✅";
+        strengthColor = "#00ffcc";
+    }
+
+    strengthText.textContent = strengthLabel;
+    strengthText.style.color = strengthColor;
+    progressFill.style.background = strengthColor;
+    progressFill.style.width = fillWidth + "%";
+}
+
+// Auto-generate on page load
+window.onload = generatePassword;
+</script>
+
+</body>
+</html>

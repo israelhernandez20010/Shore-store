@@ -1,0 +1,355 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cash In / Cash Out Tracker with Claim Status & Stats</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+  }
+  h1 {
+    text-align: center;
+  }
+  form {
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  input, select, button {
+    padding: 8px;
+    font-size: 1em;
+  }
+  input[type="text"], input[type="number"], input[type="datetime-local"] {
+    flex: 1 1 150px;
+  }
+  button {
+    cursor: pointer;
+  }
+  #search {
+    margin-bottom: 10px;
+    width: 100%;
+    padding: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+  th {
+    background-color: #f4f4f4;
+  }
+  .actions {
+    display: flex;
+    gap: 5px;
+  }
+  #stats {
+    margin-top: 20px;
+  }
+  #stats h2 {
+    margin-top: 0;
+  }
+  /* Highlight duplicates */
+  .duplicate-ref {
+    background-color: #ffdddd;
+  }
+</style>
+</head>
+<body>
+
+<h1>Cash In / Cash Out Tracker with Claim Status & Stats</h1>
+
+<!-- Search Bar -->
+<input type="text" id="search" placeholder="Search by Name, Purpose, or Ref#" onkeyup="filterTable(); updateStats()" />
+
+<!-- Transaction Form -->
+<form id="transactionForm">
+  <input type="hidden" id="editId" />
+  <input type="text" id="name" placeholder="Name" required />
+  <input type="text" id="ref" placeholder="Ref#" required />
+  <input type="datetime-local" id="datetime" required />
+  <input type="text" id="purpose" placeholder="Purpose" required />
+  <input type="number" id="amount" placeholder="Amount" required />
+  <select id="type" required>
+    <option value="">Select Type</option>
+    <option value="Cash In">Cash In</option>
+    <option value="Cash Out">Cash Out</option>
+  </select>
+  <label>
+    Claimed:
+    <input type="checkbox" id="claimed" />
+  </label>
+  <button type="submit" id="addBtn">Add Transaction</button>
+  <button type="button" id="cancelEdit" style="display:none;" onclick="cancelEdit()">Cancel</button>
+</form>
+
+<!-- Export / Import Buttons -->
+<button onclick="exportData()">Export Data</button>
+<input type="file" accept=".json" onchange="importData(event)" />
+
+<!-- Transactions Table -->
+<table id="transactionsTable">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Ref#</th>
+      <th>Date & Time</th>
+      <th>Purpose</th>
+      <th>Amount</th>
+      <th>Type</th>
+      <th>Claimed</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<!-- Stats Section -->
+<div id="stats" style="display: none;">
+  <h2>Statistics & Summary</h2>
+  <div id="personCounts"></div>
+  <div id="weeklySummary"></div>
+  <div id="monthlySummary"></div>
+  <div id="totalCashIn"></div>
+  <div id="totalCashOut"></div>
+</div>
+
+<script>
+  let transactions = [];
+
+  window.onload = () => {
+    loadFromLocalStorage();
+    renderTable();
+    updateStats();
+  };
+
+  function saveToLocalStorage() {
+    localStorage.setItem('transactions', JSON.stringify(transactions));
+  }
+
+  function loadFromLocalStorage() {
+    const data = localStorage.getItem('transactions');
+    if (data) {
+      transactions = JSON.parse(data);
+    }
+  }
+
+  // Add or update transaction
+  document.getElementById('transactionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const id = document.getElementById('editId').value;
+    const name = document.getElementById('name').value.trim();
+    const ref = document.getElementById('ref').value.trim();
+    const datetime = document.getElementById('datetime').value;
+    const purpose = document.getElementById('purpose').value.trim();
+    const amount = parseFloat(document.getElementById('amount').value);
+    const type = document.getElementById('type').value;
+    const claimed = document.getElementById('claimed').checked;
+
+    if (!name || !ref || !datetime || !purpose || isNaN(amount) || !type) {
+      alert('Please fill all fields correctly.');
+      return;
+    }
+
+    // 🚨 Duplicate Ref# check
+    const duplicateRef = transactions.some(tx => tx.ref.toLowerCase() === ref.toLowerCase() && tx.id != id);
+    if (duplicateRef) {
+      alert(`⚠️ Warning: Ref# "${ref}" already exists! Please double-check to avoid duplication.`);
+      return;
+    }
+
+    if (id) {
+      const index = transactions.findIndex(tx => tx.id == id);
+      if (index !== -1) {
+        transactions[index] = {
+          id: parseInt(id),
+          name,
+          ref,
+          datetime,
+          purpose,
+          amount,
+          type,
+          claimed
+        };
+      }
+    } else {
+      transactions.push({
+        id: Date.now(),
+        name,
+        ref,
+        datetime,
+        purpose,
+        amount,
+        type,
+        claimed
+      });
+    }
+
+    saveToLocalStorage();
+    renderTable();
+    updateStats();
+    document.getElementById('transactionForm').reset();
+    document.getElementById('editId').value = '';
+    document.getElementById('addBtn').textContent = 'Add Transaction';
+    document.getElementById('cancelEdit').style.display = 'none';
+  });
+
+  // Render table
+  function renderTable() {
+    const tbody = document.querySelector('#transactionsTable tbody');
+    tbody.innerHTML = '';
+
+    const refCounts = {};
+    transactions.forEach(tx => {
+      const lowerRef = tx.ref.toLowerCase();
+      refCounts[lowerRef] = (refCounts[lowerRef] || 0) + 1;
+    });
+
+    transactions.forEach(tx => {
+      const tr = document.createElement('tr');
+      const isDuplicate = refCounts[tx.ref.toLowerCase()] > 1;
+
+      if (isDuplicate) {
+        tr.classList.add('duplicate-ref');
+      }
+
+      tr.innerHTML = `
+        <td>${tx.name}</td>
+        <td>${tx.ref}</td>
+        <td>${new Date(tx.datetime).toLocaleString()}</td>
+        <td>${tx.purpose}</td>
+        <td>${tx.amount.toFixed(2)}</td>
+        <td>${tx.type}</td>
+        <td>${tx.claimed ? 'Yes' : 'No'}</td>
+        <td class="actions">
+          <button onclick="editTransaction(${tx.id})">Edit</button>
+          <button onclick="deleteTransaction(${tx.id})">Delete</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function deleteTransaction(id) {
+    transactions = transactions.filter(tx => tx.id !== id);
+    saveToLocalStorage();
+    renderTable();
+    updateStats();
+  }
+
+  function editTransaction(id) {
+    const tx = transactions.find(t => t.id === id);
+    if (tx) {
+      document.getElementById('editId').value = tx.id;
+      document.getElementById('name').value = tx.name;
+      document.getElementById('ref').value = tx.ref;
+      document.getElementById('datetime').value = tx.datetime;
+      document.getElementById('purpose').value = tx.purpose;
+      document.getElementById('amount').value = tx.amount;
+      document.getElementById('type').value = tx.type;
+      document.getElementById('claimed').checked = tx.claimed;
+      document.getElementById('addBtn').textContent = 'Update Transaction';
+      document.getElementById('cancelEdit').style.display = 'inline';
+    }
+  }
+
+  function cancelEdit() {
+    document.getElementById('transactionForm').reset();
+    document.getElementById('editId').value = '';
+    document.getElementById('addBtn').textContent = 'Add Transaction';
+    document.getElementById('cancelEdit').style.display = 'none';
+  }
+
+  function filterTable() {
+    const query = document.getElementById('search').value.toLowerCase();
+    const rows = document.querySelectorAll('#transactionsTable tbody tr');
+
+    rows.forEach(row => {
+      const name = row.children[0].textContent.toLowerCase();
+      const ref = row.children[1].textContent.toLowerCase();
+      const purpose = row.children[3].textContent.toLowerCase();
+
+      if (name.includes(query) || ref.includes(query) || purpose.includes(query)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  function updateStats() {
+    const query = document.getElementById('search').value.trim().toLowerCase();
+    const statsDiv = document.getElementById('stats');
+    if (query === '' || !transactions.some(tx => {
+      return tx.name.toLowerCase().includes(query) ||
+             tx.ref.toLowerCase().includes(query) ||
+             tx.purpose.toLowerCase().includes(query);
+    })) {
+      statsDiv.style.display = 'none';
+      return;
+    } else {
+      statsDiv.style.display = 'block';
+    }
+
+    const filteredTx = transactions.filter(tx => {
+      const name = tx.name.toLowerCase();
+      const ref = tx.ref.toLowerCase();
+      const purpose = tx.purpose.toLowerCase();
+      return (
+        name.includes(query) ||
+        ref.includes(query) ||
+        purpose.includes(query)
+      );
+    });
+
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0,0,0,0);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const weeklyTx = filteredTx.filter(tx => new Date(tx.datetime) >= startOfWeek);
+    const monthlyTx = filteredTx.filter(tx => new Date(tx.datetime) >= startOfMonth);
+
+    const personCountMap = {};
+    filteredTx.forEach(tx => {
+      personCountMap[tx.name] = (personCountMap[tx.name] || 0) + 1;
+    });
+
+    const totalCashInWeek = weeklyTx.filter(t => t.type === 'Cash In').reduce((sum, t) => sum + t.amount, 0);
+    const totalCashOutWeek = weeklyTx.filter(t => t.type === 'Cash Out').reduce((sum, t) => sum + t.amount, 0);
+    const totalCashInMonth = monthlyTx.filter(t => t.type === 'Cash In').reduce((sum, t) => sum + t.amount, 0);
+    const totalCashOutMonth = monthlyTx.filter(t => t.type === 'Cash Out').reduce((sum, t) => sum + t.amount, 0);
+    const totalCashInAll = filteredTx.filter(t => t.type === 'Cash In').reduce((sum, t) => sum + t.amount, 0);
+    const totalCashOutAll = filteredTx.filter(t => t.type === 'Cash Out').reduce((sum, t) => sum + t.amount, 0);
+
+    document.getElementById('personCounts').innerHTML = `<h3>Number of Transactions per Person</h3>`;
+    for (const person in personCountMap) {
+      document.getElementById('personCounts').innerHTML += `<p>${person}: ${personCountMap[person]} transactions</p>`;
+    }
+
+    document.getElementById('weeklySummary').innerHTML = `
+      <h3>Weekly Summary</h3>
+      <p>Total Cash In: ${totalCashInWeek.toFixed(2)}</p>
+      <p>Total Cash Out: ${totalCashOutWeek.toFixed(2)}</p>
+    `;
+
+    document.getElementById('monthlySummary').innerHTML = `
+      <h3>Monthly Summary</h3>
+      <p>Total Cash In: ${totalCashInMonth.toFixed(2)}</p>
+      <p>Total Cash Out: ${totalCashOutMonth.toFixed(2)}</p>
+    `;
+
+    document.getElementById('totalCashIn').innerHTML = `<p>Total Cash In (Filtered): ${totalCashInAll.toFixed(2)}</p>`;
+    document.getElementById('totalCashOut').innerHTML = `<p>Total Cash Out (Filtered): ${totalCashOutAll.toFixed(2)}</p>`;
+  }
+</script>
+</body>
+</html>

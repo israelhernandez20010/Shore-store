@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Calendar Scheduler</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f6f8;
+            padding: 20px;
+            max-width: 900px;
+            margin: auto;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+        h2 {
+            margin-top: 30px;
+            color: #444;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
+        textarea {
+            width: 100%;
+            height: 80px;
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            resize: vertical;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .secondary-btn {
+            background-color: #6c757d;
+        }
+        .secondary-btn:hover {
+            background-color: #545b62;
+        }
+        hr {
+            margin: 25px 0;
+            border: none;
+            border-top: 1px solid #ddd;
+        }
+        #event_sections > div {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        #event_sections h3 {
+            margin-top: 0;
+            padding-bottom: 5px;
+            font-size: 18px;
+        }
+        .today-events h3 { color: #ff9800; }
+        .today-past h3 { color: #ff5722; }
+        .upcoming h3 { color: #007bff; }
+        .far-future h3 { color: #28a745; }
+        .past h3 { color: #6c757d; }
+        .event-item {
+            padding: 12px;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+            margin-bottom: 8px;
+            transition: background 0.3s ease;
+        }
+        .event-item:hover {
+            background-color: #e9ecef;
+        }
+        .event-item strong {
+            font-size: 16px;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .action-buttons button {
+            margin-right: 8px;
+            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            background-color: #17a2b8;
+            border: none;
+        }
+        .action-buttons button:hover {
+            background-color: #117a8b;
+        }
+        .done-btn {
+            background-color: #28a745;
+        }
+        .done-btn:hover {
+            background-color: #218838;
+        }
+        #answer_area {
+            margin-top: 10px;
+            padding: 12px;
+            background: #fff3cd;
+            border-radius: 6px;
+            border: 1px solid #ffeeba;
+        }
+        #spinner {
+            display: none;
+            margin-top: 10px;
+            text-align: center;
+        }
+        #spinner img {
+            width: 40px;
+            height: 40px;
+        }
+        input[type=file] {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📅 AI Calendar Event Creator</h1>
+
+    <p><b>I-type ang iyong event:</b> (Halimbawa: "Meeting with boss next Tuesday at 10 AM for one hour")</p>
+    <textarea id="event_input" placeholder="I-type ang detalye dito..."></textarea>
+    <button onclick="processEvent()">➕ Create Event</button>
+
+    <hr>
+
+    <h2>Data Management</h2>
+    <button onclick="exportEvents()">💾 Export Events (JSON)</button>
+    <br><br>
+    <label><b>Import Events:</b></label><br>
+    <input type="file" id="importFile" accept=".json">
+    <button onclick="importEvents()" class="secondary-btn">📂 Import</button>
+
+    <hr>
+
+    <h2>Ask About Saved Events 🗨️</h2>
+    <p>Mag-type ng tanong tungkol sa iyong events:</p>
+    <textarea id="question_input" placeholder="Halimbawa: 'Ano ang mga events ko bukas?'"></textarea>
+    <button onclick="askAboutEvents()">🤖 Ask AI</button>
+
+    <div id="spinner">
+        <img src="https://i.gifer.com/ZZ5H.gif" alt="Loading...">
+        <p>AI is thinking...</p>
+    </div>
+
+    <div id="answer_area"></div>
+
+    <hr>
+
+    <h2>Generated Events (Auto-Saved)</h2>
+    <div id="event_sections"></div>
+
+<script>
+const OPENAI_API_KEY = "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"; 
+const STORAGE_KEY = 'myAICalendarEvents';
+let events = [];
+
+function loadEvents() {
+    const eventsJson = localStorage.getItem(STORAGE_KEY);
+    return eventsJson ? JSON.parse(eventsJson) : [];
+}
+function saveEvents(eventsArray) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(eventsArray));
+}
+function generateUniqueId() {
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+
+async function getStructuredEventData(text) {
+    const messages = [
+        { "role": "system", "content": "Output ay striktong JSON: {\"title\": \"string\", \"start\": \"ISO 8601\", \"end\": \"ISO 8601\", \"location\": \"string\"}" },
+        { "role": "user", "content": text }
+    ];
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({ model: "gpt-5-nano", messages, response_format: { "type": "json_object" } })
+    });
+    const data = await response.json();
+    if (data.error) throw new Error(`OpenAI API Error: ${data.error.message}`);
+    return JSON.parse(data.choices[0].message.content.trim());
+}
+
+async function processEvent() {
+    const inputEl = document.getElementById('event_input');
+    const input = inputEl.value.trim();
+    if (!input) return;
+    inputEl.disabled = true;
+    inputEl.value = 'Processing...';
+    try {
+        const newEventData = await getStructuredEventData(input);
+        newEventData.id = generateUniqueId();
+        events.push(newEventData);
+        saveEvents(events);
+        renderEvents();
+        alert(`Event created: ${newEventData.title}`);
+    } catch (e) {
+        alert(`ERROR: ${e.message}`);
+    } finally {
+        inputEl.disabled = false;
+        inputEl.value = '';
+    }
+}
+
+function deleteEvent(id) {
+    if (!confirm("Burahin ang event?")) return;
+    events = events.filter(e => e.id !== id);
+    saveEvents(events);
+    renderEvents();
+}
+function editEvent(id) {
+    const ev = events.find(e => e.id === id);
+    if (!ev) return;
+    const newTitle = prompt("Baguhin ang title:", ev.title);
+    if (newTitle) {
+        ev.title = newTitle.trim();
+        saveEvents(events);
+        renderEvents();
+    }
+}
+function markEventDone(id) {
+    const ev = events.find(e => e.id === id);
+    if (ev) {
+        ev.end = new Date().toISOString(); // mark as past
+        saveEvents(events);
+        renderEvents();
+    }
+}
+
+function categorizeEvents(allEvents) {
+    const now = new Date();
+    const oneWeek = 7 * 24 * 60 * 60 * 1000;
+    const categories = { upcoming: [], farFuture: [], past: [] };
+    allEvents.forEach(event => {
+        const startTime = new Date(event.start);
+        const endTime = new Date(event.end);
+        if (endTime < now) categories.past.push(event);
+        else if (startTime.getTime() - now.getTime() <= oneWeek) categories.upcoming.push(event);
+        else categories.farFuture.push(event);
+    });
+    return categories;
+}
+
+function renderEvents() {
+    const sectionsDiv = document.getElementById('event_sections');
+    sectionsDiv.innerHTML = '';
+    events = loadEvents();
+
+    if (events.length === 0) {
+        sectionsDiv.innerHTML = '<p>Wala pang events.</p>';
+        return;
+    }
+
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('tl-PH', { year: 'numeric', month: 'numeric', day: 'numeric' });
+    
+    const todaysEventsOngoing = events.filter(ev =>
+        new Date(ev.start).toLocaleDateString('tl-PH', { year: 'numeric', month: 'numeric', day: 'numeric' }) === todayStr &&
+        new Date(ev.end) >= now
+    );
+
+    const todaysEventsPast = events.filter(ev =>
+        new Date(ev.start).toLocaleDateString('tl-PH', { year: 'numeric', month: 'numeric', day: 'numeric' }) === todayStr &&
+        new Date(ev.end) < now
+    );
+
+    const categories = categorizeEvents(events);
+
+    const createSection = (title, categoryName, eventList, showDone=false) => {
+        const section = document.createElement('div');
+        section.className = categoryName;
+        section.innerHTML = `<h3>${title} (${eventList.length})</h3>`;
+        if (!eventList.length) {
+            section.innerHTML += '<p>Walang events.</p>';
+            return section;
+        }
+        eventList.forEach(data => {
+            const startDate = new Date(data.start);
+            const endDate = new Date(data.end);
+            const locationText = data.location ? ` | Lokasyon: ${data.location}` : '';
+            const eventElement = document.createElement('div');
+            eventElement.className = 'event-item';
+            eventElement.innerHTML = `
+                <strong>${data.title}</strong>
+                Simula: ${startDate.toLocaleString()}
+                Tapos: ${endDate.toLocaleString()}
+                ${locationText}
+                <div class="action-buttons">
+                    <button onclick="editEvent('${data.id}')">✏️ Edit</button>
+                    <button onclick="deleteEvent('${data.id}')">🗑️ Delete</button>
+                    ${showDone ? `<button class="done-btn" onclick="markEventDone('${data.id}')">✅ Done</button>` : ''}
+                </div>
+            `;
+            section.appendChild(eventElement);
+        });
+        return section;
+    };
+
+    sectionsDiv.appendChild(createSection("Today's Events 📅", "today-events", todaysEventsOngoing, true));
+    sectionsDiv.appendChild(createSection("Today's Past Events 🕘", "today-past", todaysEventsPast));
+    sectionsDiv.appendChild(createSection("Upcoming Events (Next 7 Days)", "upcoming", categories.upcoming));
+    sectionsDiv.appendChild(createSection("Far Future Events", "far-future", categories.farFuture));
+    sectionsDiv.appendChild(createSection("Past Events (All)", "past", categories.past));
+}
+
+function exportEvents() {
+    const data = loadEvents();
+    if (!data.length) { alert("Walang events."); return; }
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'events.json';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+function importEvents() {
+    const file = document.getElementById('importFile').files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const imported = JSON.parse(e.target.result);
+            events = imported.map(ev => ({ ...ev, id: ev.id || generateUniqueId() }));
+            saveEvents(events);
+            renderEvents();
+        } catch {
+            alert("Invalid JSON.");
+        }
+    };
+    reader.readAsText(file);
+}
+
+async function askAboutEvents() {
+    const question = document.getElementById('question_input').value.trim();
+    const spinner = document.getElementById('spinner');
+    const answerArea = document.getElementById('answer_area');
+    if (!question) return;
+    spinner.style.display = 'block';
+    answerArea.innerText = '';
+    const allEvents = loadEvents();
+    try {
+        const systemMessage = {
+            role: "system",
+            content: "Ikaw ay isang matalinong calendar assistant. Events: "+JSON.stringify(allEvents)
+        };
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "gpt-5-nano",
+                messages: [systemMessage, { role: "user", content: question }]
+            })
+        });
+        const data = await response.json();
+        answerArea.innerText = data.choices[0].message.content;
+    } catch(e) {
+        answerArea.innerText = "❌ Error: " + e.message;
+    } finally {
+        spinner.style.display = 'none';
+    }
+}
+
+window.onload = () => { events = loadEvents(); renderEvents(); };
+</script>
+</body>
+</html>

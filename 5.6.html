@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPT-5.6 Sol Chatbot</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f2f2f2;
+    margin:0;
+}
+.container{
+    max-width:800px;
+    margin:20px auto;
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.15);
+}
+h2{
+    text-align:center;
+}
+input,textarea,button{
+    width:100%;
+    box-sizing:border-box;
+    padding:10px;
+    margin-top:10px;
+    font-size:16px;
+}
+#chat{
+    height:350px;
+    overflow:auto;
+    border:1px solid #ccc;
+    padding:10px;
+    margin-top:10px;
+    background:#fafafa;
+}
+.user{
+    color:blue;
+    margin-bottom:10px;
+}
+.ai{
+    color:green;
+    margin-bottom:15px;
+}
+button{
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>GPT-5.6 Sol Chatbot</h2>
+
+<input
+id="apikey"
+type="password"
+placeholder="Paste OpenAI API Key here">
+
+<textarea
+id="prompt"
+rows="4"
+placeholder="Type your message..."></textarea>
+
+<button onclick="sendMessage()">Send</button>
+
+<div id="chat"></div>
+
+</div>
+
+<script>
+
+async function sendMessage(){
+
+const apiKey=document.getElementById("apikey").value.trim();
+const prompt=document.getElementById("prompt").value.trim();
+
+if(!apiKey){
+alert("Enter API Key");
+return;
+}
+
+if(!prompt){
+return;
+}
+
+const chat=document.getElementById("chat");
+
+chat.innerHTML+=`<div class="user"><b>You:</b> ${prompt}</div>`;
+
+document.getElementById("prompt").value="";
+
+try{
+
+const response=await fetch("https://api.openai.com/v1/responses",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer "+apiKey
+},
+
+body:JSON.stringify({
+
+model:"gpt-5.6-sol",
+
+input:prompt
+
+})
+
+});
+
+const data=await response.json();
+
+let reply="No response.";
+
+if(data.output_text){
+reply=data.output_text;
+}
+else if(data.output){
+reply=data.output
+.map(item=>item.content?.map(c=>c.text).join(""))
+.join("");
+}
+else{
+reply=JSON.stringify(data,null,2);
+}
+
+chat.innerHTML+=`<div class="ai"><b>GPT:</b> ${reply}</div>`;
+
+chat.scrollTop=chat.scrollHeight;
+
+}catch(err){
+
+chat.innerHTML+=`<div class="ai"><b>Error:</b> ${err}</div>`;
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
